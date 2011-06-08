@@ -1,0 +1,180 @@
+/*
+Copyright (C) Copyright (C) 41a240b48fb7c10c68ae4820ac54c0f32a214056bfcfe1c2e7ab4d3fb53187a0 Name Year (sha256)
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+Website Reference:http://www.gnu.org/licenses/gpl-2.0.html
+
+*/
+*{
+	margin:0;
+	padding:0;
+	
+}
+
+body{
+	background-color:#FFF;
+	/*)background-image:url(/images/background.jpg);
+	background-position:25em 0;*/
+	color:#000;
+	font-family: Arial;
+}
+
+input{
+	border: 1px solid #000;
+}
+
+a:active,a:link,a:visited{
+	color:#FFF;
+}
+a:hover{
+	color:#9FB6CD;
+	font-weight:bold;
+}
+
+/*-----End of Defaults------*/
+
+a.menu:active,a.menu:link,a.menu:visited{
+	color:#FFF;
+	font-weight:bold;
+	font-size:1.5em;
+	text-align:center;
+	text-decoration: none;
+}
+
+a.menu:hover{
+	color:#000;
+	font-weight:bold;
+	font-size:1.5em;
+	text-align:center;
+	text-decoration: none;
+}
+
+
+#header{
+	width:100%;
+	height:8em;
+	background-color:#144e56;
+}
+#logo{
+	width:100%;
+	height:8em;
+	float:left;
+}
+
+#loginForm{
+	position:relative;
+	top:.5em;
+	left:.5em;
+}
+
+#lostPassForm{
+	position:relative;
+	top:0;
+	left: 1em;
+}
+
+#userInfo{
+	float: left;
+	background-color:#DDD;	
+	width:15em;
+	height: 100%;
+	padding:.5em;
+	/*margin-left:1em;
+}
+
+#bodyContent{
+	/*width:100%;*/
+	height:100%;
+	background-color:#FFF;		
+}
+
+#blogContainer{
+		
+		margin-left:1em;
+		padding-top:1em;
+		padding-left:1em;
+}
+#footer{		
+		text-align:center;
+		clear: both;
+	    /*position:absolute;
+   		bottom:0;
+   		width:100%;
+   		height:26px;
+   		background:#144e56;;*/   		
+}
+
+/*-----Menu Buttons------*/
+#menuBar{	
+	background-color:#000;
+	width: 100%;
+	height:2em;
+}
+div.menuBtn{
+	float:left;
+	margin-left:1em;
+	height:2em;
+}
+
+div.menuBtn:Hover{
+	float:left;
+	margin-left:1em;
+	background-color:#CAE1FF;
+	height:2em;
+}
+
+/*-----Text-----*/
+h1.header{
+	font-size:3.5em;
+	margin:0 auto;
+	width:100%;
+	text-align:center;
+	color:#CAE1FF;
+}
+h3.slogan{
+	text-align:center;
+	width:100%;
+	color:#CAE1FF;
+}
+
+span.goodMessage{
+	color:#66FF33;
+	font-weight:bold;
+}
+span.returnMessage{
+	color:#FF66FF;
+	font-weight:bold;
+	font-size:1.5em;
+}
+
+#leftsidebar {		
+	float: left;
+	background-color:#DDD;
+	width: 15em;	
+	padding:.5em;
+	overflow: none;
+	
+}
+
+#content {
+	white-space: normal;
+	padding: 1em;
+	margin: .5em;
+	margin-left: 16em;	
+	background-color: #FFF;
+	
+}
+
+
