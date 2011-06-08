@@ -62,6 +62,7 @@ function connectToDb(){
 class checkLogin
 {
 	function checkCookie($input, $ipaddress){	
+		global $salt;		
 		connectToDb();		
 		/*$input comes in the following format userId-passwordhash
 		
