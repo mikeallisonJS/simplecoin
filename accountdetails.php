@@ -70,7 +70,7 @@ if (isset($_POST["act"])) {
 					//Send money//
 					if($bitcoinControll->sendtoaddress($paymentAddress, $currentBalance)) {
 						$paid = 0;
-						$result = mysql_query("SELECT IFNULL(paid,'0') FROM accountBalance WHERE userId=".$userId);
+						$result = mysql_query("SELECT IFNULL(paid,'0') as paid FROM accountBalance WHERE userId=".$userId);
 						if ($resultrow = mysql_fetch_object($result)) $paid = $resultrow->paid + $currentBalance;
 						
 						//Reduce balance amount to zero
