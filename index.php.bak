@@ -19,18 +19,8 @@
 include ("includes/header.php");
 ?>
 
-<h1>Welcome to SimpleCoin.us</h1> <br/>
-
-If you are a new user, please create an account, Click "Getting Started", and follow the instructions on that page.<br/><br/>
-
-Simplecoin is run completely by opensource software. Even this website is opensource!<br/><br/>
-
-We currently have a fee of 0.001% and use cheat-proof scoring to ensure payout of your hard work.<br/><br/>
-
-If you have any issues, please note them in the forum.<br/><br/>
-
-Thank you!<br/>
-
+Welcome to SimpleCoin.us. The site is currently being built, but you can create an account and use the pool in the mean time.
+Just point your favorite miner at simplecoin.us:8337
 
 <?php include ("includes/footer.php"); ?>
 

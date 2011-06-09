@@ -95,12 +95,7 @@ if (isset($_POST["act"])) {
 			//Update user's details
 			$newSendAddress = mysql_real_escape_string($_POST["paymentAddress"]);
 			$newDonatePercent = mysql_real_escape_string($_POST["donatePercent"]);
-			$newPayoutThreshold = mysql_real_escape_string($_POST["payoutThreshold"]);
-			if ($newPayoutThreshold > 25)
-				$newPayoutThreshold = 25;
-			if ($newPayoutThreshold < 1)
-				$newPayoutThreshold = 0;
-			$updateSuccess1 = mysql_query("UPDATE accountBalance SET sendAddress = '".$newSendAddress."', threshold = '".$newPayoutThreshold."' WHERE userId = ".$userId);
+			$updateSuccess1 = mysql_query("UPDATE accountBalance SET sendAddress = '".$newSendAddress."' WHERE userId = ".$userId);
 			if (!is_nan($newDonatePercent))
 				$updateSuccess2 = mysql_query("UPDATE webUsers SET donate_percent='".$newDonatePercent."' WHERE id = ".$userId);
 			else
@@ -110,7 +105,6 @@ if (isset($_POST["act"])) {
 				$goodMessage = "Account details are now updated.";
 				$paymentAddress = $newSendAddress;
 				$donatePercent = $newDonatePercent;
-				$payoutThreshold = $newPayoutThreshold;
 			}
 		}
 
@@ -187,7 +181,6 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 	<tr><td></td></tr>
 	<tr><td>Payment Address: </td><td><input type="text" name="paymentAddress" value="<?php echo $paymentAddress?>" width="300"></td></tr>
 	<tr><td>Donation %: </td><td><input type="text" name="donatePercent" value="<?php echo $donatePercent;?>"></td></tr>
-	<tr><td>Automatic Payout: </br>(1-25 BTC, 0 for manual)</td><td valign="top"><input type="text" name="payoutThreshold" value="<?php echo $payoutThreshold;?>" size="2" maxlength="2"></td></tr>
 	<tr><td>Authorize Pin: </td><td><input type="password" name="authPin" size="4" maxlength="4"></td></tr>
 </table>
 <input type="submit" value="Update Account Settings"></form>

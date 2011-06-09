@@ -28,6 +28,7 @@ CREATE TABLE `accountBalance` (
   `balance` varchar(40) DEFAULT NULL,
   `sendAddress` varchar(255) DEFAULT '',
   `paid` varchar(40) DEFAULT '0',
+  `threshold` tinyint(4) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`),
   KEY `b_userId` (`userId`)

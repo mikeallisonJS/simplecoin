@@ -59,16 +59,14 @@ if(isSet($_COOKIE[$cookieName])){
 				
 				
 	//Get Current balance				    
-	$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress, threshold FROM accountBalance WHERE userId = '".$userId."' LIMIT 0,1");
+	$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress FROM accountBalance WHERE userId = '".$userId."' LIMIT 0,1");
 	if ($currentBalanceObj = mysql_fetch_object($currentBalanceQ)) {
 		$currentBalance = $currentBalanceObj->balance;
 		//Get payment address that is associated wit this user
-		$paymentAddress = $currentBalanceObj->sendAddress;		
-		$payoutThreshold = $currentBalanceObj->threshold;	
+		$paymentAddress = $currentBalanceObj->sendAddress;			
 	} else {
 		$currentBalance = 0;
 		$paymentAddress = "";
-		$payoutThreshold = 0;
 	}
 }
 ?>
