@@ -59,16 +59,16 @@ if (isset($_POST["act"])) {
 			//Get user's balance and send it to set address;
 			//Does user have any money in their balance
 			if($currentBalance > 0.01){
-				$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
+				$bitcoinControll = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
 
 				//Send $currentBalance to $paymentAddress
 				//Validate that a $paymentAddress has been set & is valid before sending
-				$isValidAddress = $bitcoinController->validateaddress($paymentAddress);
+				$isValidAddress = $bitcoinControll->validateaddress($paymentAddress);
 				if($isValidAddress){
 					//Subtract TX feee
 					$currentBalance = $currentBalance - 0.01;
 					//Send money//
-					if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {
+					if($bitcoinControll->sendtoaddress($paymentAddress, $currentBalance)) {
 						$paid = 0;
 						$result = mysql_query("SELECT IFNULL(paid,'0') as paid FROM accountBalance WHERE userId=".$userId);
 						if ($resultrow = mysql_fetch_object($result)) $paid = $resultrow->paid + $currentBalance;
@@ -185,8 +185,8 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 	<tr><td>Username: </td><td><?php echo $userInfo->username;?></td></tr>
 	<tr><td><a href="api.php?api_key=<?php echo $userApiKey ?>" style="color: blue" target="_blank">API</a> Key: </td><td><?php echo $userApiKey; ?></td></tr>
 	<tr><td></td></tr>
-	<tr><td>Payment Address: </td><td><input type="text" name="paymentAddress" value="<?php echo $paymentAddress?>" size="40"></td></tr>
-	<tr><td>Donation %: </td><td><input type="text" name="donatePercent" value="<?php echo $donatePercent;?>" size="4"></td></tr>
+	<tr><td>Payment Address: </td><td><input type="text" name="paymentAddress" value="<?php echo $paymentAddress?>" width="300"></td></tr>
+	<tr><td>Donation %: </td><td><input type="text" name="donatePercent" value="<?php echo $donatePercent;?>"></td></tr>
 	<tr><td>Automatic Payout: </br>(1-25 BTC, 0 for manual)</td><td valign="top"><input type="text" name="payoutThreshold" value="<?php echo $payoutThreshold;?>" size="2" maxlength="2"></td></tr>
 	<tr><td>Authorize Pin: </td><td><input type="password" name="authPin" size="4" maxlength="4"></td></tr>
 </table>
