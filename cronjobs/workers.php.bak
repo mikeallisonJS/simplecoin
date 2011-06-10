@@ -54,12 +54,8 @@ try {
 	}
 } catch (Exception $e) {}
 
-//$totalscoreQ = mysql_query("SELECT (sum(exp(s1.score-s2.score))+exp(".$los."-s2.score)) AS score FROM shares_history s1, shares_history s2 WHERE s2.id = s1.id - 1 AND s1.counted = 0");
-//$totalscoreR = mysql_fetch_object($totalscoreQ);
-//$totalscore = $totalscoreR->score; 	
-
-
-if ($settings->getsetting("siterewardtype") == 0)
+//This isn't acurate, proportional is closer.
+/*if ($settings->getsetting("siterewardtype") == 0)
 {
 	//Cheat proof estimate
 	$userListQ = mysql_query("SELECT IFNULL(sum(exp(s1.score-s2.score)),0) as score, u.id, u.donate_percent FROM webUsers u, pool_worker p, shares_history s1, shares_history s2 WHERE s1.counted = 0 AND p.associatedUserId = u.id AND s1.username = p.username AND s2.id = s1.id-1 GROUP BY u.id");
@@ -80,27 +76,10 @@ if ($settings->getsetting("siterewardtype") == 0)
 		} 
 		mysql_query("UPDATE webUsers SET round_estimate='".$totalReward."' WHERE id=".$userListR->id);
 	}
-} else {
+} else {*/
+//Update them all at once, much more efficient.
 	//Proportional estimate
 	$totalRoundShares = $settings->getsetting("currentroundshares");
-	$userListQ = mysql_query("SELECT id, shares_this_round, donate_percent from webUsers");
-	while ($userListR = mysql_fetch_object($userListQ)) {
-		$donatePercent = $userListR->donate_percent;
-		$shareRatio = $userListR->shares_this_round/$totalRoundShares;
-		$predonateAmount = (1-$f)*(50*$shareRatio);				
-				
-		$predonateAmount = rtrim(sprintf("%f",$predonateAmount ),"0");	
-		$totalReward = 0;
-		if ($predonateAmount > 0.00000001)
-		{
-			//Take out donation			
-			$totalReward = $predonateAmount - ($predonateAmount * ($donatePercent/100));
-								
-			//Round Down to 8 digits
-			$totalReward = $totalReward * 100000000;
-			$totalReward = floor($totalReward);
-			$totalReward = $totalReward/100000000;
-		} 
-		mysql_query("UPDATE webUsers SET round_estimate='".$totalReward."' WHERE id=".$userListR->id);		
-	}	
-}
+	if ($totalRoundShares < $difficulty) $totalRoundShares = $difficulty;
+	$userListQ = mysql_query("UPDATE webUsers SET round_estimate = (1-".$f.")*50*(shares_this_round/".$totalRoundShares.")*(1-(donate_percent/100))");
+//}

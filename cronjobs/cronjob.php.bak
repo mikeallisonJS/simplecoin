@@ -287,5 +287,6 @@ if ($settings->getsetting("siterewardtype") == 0) {
 $ticker = $mtgox->ticker();
 
 if (intval($ticker['last']) > 0) $settings->setsetting('mtgoxlast', $ticker['last']);
+$settings->setsetting('currentworkers', $stats->currentworkers());
 
 ?>

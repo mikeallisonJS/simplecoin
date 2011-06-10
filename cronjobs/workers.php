@@ -42,6 +42,7 @@ $r = log(1.0-$p+$p/$c);
 $B = 50;
 $los = log(1/(exp($r)-1));
 
+$currentWorkers = 0;
 //Active in past 10 minutes
 try {
 	$sql ="SELECT sum(a.id) IS NOT NULL AS active, p.username FROM pool_worker p LEFT JOIN ".
@@ -50,8 +51,11 @@ try {
 		  "SELECT count(id) AS id, username FROM shares_history WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) group by username) a ON p.username=a.username group by username";
 	$result = mysql_query($sql);
 	while ($resultObj = mysql_fetch_object($result)) {
+		if ($resultObj->active == 1)
+			$currentWorkers += 1;
 		mysql_query("UPDATE pool_worker p SET active=".$resultObj->active." WHERE username='".$resultObj->username."'");
 	}
+	$settings->setsetting('currentworkers', $currentWorkers);
 } catch (Exception $e) {}
 
 //This isn't acurate, proportional is closer.
