@@ -5,7 +5,7 @@ setcookie($cookieName, false);
 ?>
 <html>
   <head>
-	<title><?php echo outputPageTitle();?> </title>
+	<title><?php echo antiXss(outputPageTitle());?> </title>
 	<link rel="stylesheet" href="/css/mainstyle.css" type="text/css" />
 	<meta http-equiv="refresh" content="2;url=/">
   </head>

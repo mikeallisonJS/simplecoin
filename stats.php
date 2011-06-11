@@ -22,7 +22,7 @@ include ("includes/header.php");
 <h1>Server Stats</h1><br/>
 <?php
 $bitcoincon = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword);
-echo "Current Block: ".$bitcoincon->getblocknumber()."<br/>";
+echo "Current Block: ".antiXss($bitcoincon->getblocknumber())."<br/>";
 echo "Current Difficulty: ".round($bitcoincon->getdifficulty(), 2)."<br/>";
 
 $result = mysql_query("SELECT blockNumber, confirms, timestamp FROM networkBlocks WHERE confirms > 119 ORDER BY blockNumber DESC LIMIT 1");

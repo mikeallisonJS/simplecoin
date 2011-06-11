@@ -47,11 +47,11 @@ if (isset($_POST["act"]))
 	$act = $_POST["act"];
 	if($act == "attemptRegister"){
 		//Valid date all fields
-		$username	= $_POST["user"];
-		$pass		= $_POST["pass"];
-		$rPass		= $_POST["pass2"];
-		$email		= $_POST["email"];
-		$email2		= $_POST["email2"];
+		$username	= mysql_real_escape_string($_POST["user"]);
+		$pass		= mysql_real_escape_string($_POST["pass"]);
+		$rPass		= mysql_real_escape_string($_POST["pass2"]);
+		$email		= mysql_real_escape_string($_POST["email"]);
+		$email2		= mysql_real_escape_string($_POST["email2"]);
 		$authPin	= (int) $_POST["authPin"];
 	
 		$validRegister = 1;
@@ -113,8 +113,8 @@ if (isset($_POST["act"]))
 }
 
 //Display Error and Good Messages(If Any)
-echo "<span class=\"goodMessage\">".$goodMessage."</span><br/>";
-echo "<span class=\"returnMessage\">".$returnError."</span>";
+echo "<span class=\"goodMessage\">".antiXss($goodMessage)."</span><br/>";
+echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 
 ?>
 <form action="/register.php" method="post">

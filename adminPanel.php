@@ -54,8 +54,8 @@ if (isset($act))
 }
 
 //Display Error and Good Messages(If Any)
-echo "<span class=\"goodMessage\">".$goodMessage."</span><br/>";
-echo "<span class=\"returnMessage\">".$returnError."</span>";
+echo "<span class=\"goodMessage\">".antiXss($goodMessage)."</span><br/>";
+echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 
 ?>
 
@@ -66,11 +66,11 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 	<!--Begin main page edits-->
 	<form action="/adminPanel.php" method="post">
 		<input type="hidden" name="act" value="UpdateMainPageSettings">
-		Page Title <input type="text" name="pageTitle" value="<?php echo $settings->getsetting("pagetitle");?>"><br/>
-		Header Title <input type="text" name="headerTitle" value="<?php echo $settings->getsetting("websitename");?>"><br/>
-		Header Slogan <input type="text" name="headerSlogan" value="<?php echo $settings->getsetting("slogan");?>"><br/>
-		Percentage Fee <input type="text" name="percentageFee" size="10" maxlength="10" value="<?php echo $settings->getsetting("sitepercent"); ?>">%<br/>
-		Fee Address <input type="text" name="paymentAddress" value="<?php echo $settings->getsetting("sitepayoutaddress"); ?>"><br/>
+		Page Title <input type="text" name="pageTitle" value="<?php echo antiXss($input))$settings->getsetting("pagetitle");?>"><br/>
+		Header Title <input type="text" name="headerTitle" value="<?php echo antiXss($settings->getsetting("websitename"));?>"><br/>
+		Header Slogan <input type="text" name="headerSlogan" value="<?php echo antiXss($settings->getsetting("slogan"));?>"><br/>
+		Percentage Fee <input type="text" name="percentageFee" size="10" maxlength="10" value="<?php echo antiXss($settings->getsetting("sitepercent")); ?>">%<br/>
+		Fee Address <input type="text" name="paymentAddress" value="<?php echo antiXss($settings->getsetting("sitepayoutaddress")); ?>"><br/>
 		Default Reward Type <select name="rewardType">
 		<option value="0" <?php if ($settings->getsetting("siterewardtype") == 0) echo "selected"; ?>>Cheat Proof Score</option>
 		<option value="1" <?php if ($settings->getsetting("siterewardtype") == 1) echo "selected"; ?>>Proportional</option>

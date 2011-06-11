@@ -76,7 +76,7 @@ class checkLogin
 		$cookieInfo = explode("-", $input);
 		
 		//Get "secret" from MySql database
-		$getSecretQ	= mysql_query("SELECT secret, pass, sessionTimeoutStamp FROM webUsers WHERE id = ".$cookieInfo[0]." LIMIT 0,1");
+		$getSecretQ	= mysql_query("SELECT secret, pass, sessionTimeoutStamp FROM webUsers WHERE id = ".mysql_real_escape_string($cookieInfo[0])." LIMIT 0,1");
 		$getSecret	= mysql_fetch_object($getSecretQ);
 		$password	= $getSecret->pass;
 		$secret	= $getSecret->secret;
@@ -135,4 +135,8 @@ function genRandomString($length=10) {
 }
 
 
+function antiXss($input) {
+	//strip HTML tags from input data
+	return htmlentities(strip_tags($input), ENT_QUOTES);
+}
 ?>

@@ -36,7 +36,7 @@ class Worker {
 }
 	
 connectToDb();
-$apikey = $_GET["api_key"];
+$apikey = mysql_real_escape_string($_GET["api_key"]);
 
 $user = new User();
 

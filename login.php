@@ -74,13 +74,13 @@ if($userExists > 0){
 ?>
 <html>
   <head>
-	<title><?php echo outputPageTitle();?> </title>
+	<title><?php echo antiXss(outputPageTitle());?> </title>
 	<link rel="stylesheet" href="/css/mainstyle.css" type="text/css" />
 	<meta http-equiv="refresh" content="2;url=/">
   </head>
   <body>
 	<div id="pagecontent">
-		<h1><?php echo $outputMessage; ?><br/>
+		<h1><?php echo antiXss($outputMessage); ?><br/>
 		<a href="/">Click here if you continue to see this message</a></h1>
 	</div>
   </body>

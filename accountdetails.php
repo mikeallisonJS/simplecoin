@@ -182,12 +182,13 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <h2>Account Details</h2>
 <form action="/accountdetails.php" method="post"><input type="hidden" name="act" value="updateDetails">
 <table>
-	<tr><td>Username: </td><td><?php echo $userInfo->username;?></td></tr>
-	<tr><td><a href="api.php?api_key=<?php echo $userApiKey ?>" style="color: blue" target="_blank">API</a> Key: </td><td><?php echo $userApiKey; ?></td></tr>
+	<tr><td>Username: </td><td><?php echo antiXss($userInfo->username);?></td></tr>
+	<tr><td>User Id: </td><td><?php echo antiXss($userId); ?></td></tr>
+	<tr><td><a href="api.php?api_key=<?php echo antiXss($userApiKey) ?>" style="color: blue" target="_blank">API</a> Key: </td><td><?php echo antiXss($userApiKey); ?></td></tr>
 	<tr><td></td></tr>
-	<tr><td>Payment Address: </td><td><input type="text" name="paymentAddress" value="<?php echo $paymentAddress?>" size="40"></td></tr>
-	<tr><td>Donation %: </td><td><input type="text" name="donatePercent" value="<?php echo $donatePercent;?>" size="4"></td></tr>
-	<tr><td>Automatic Payout: </br>(1-25 BTC, 0 for manual)</td><td valign="top"><input type="text" name="payoutThreshold" value="<?php echo $payoutThreshold;?>" size="2" maxlength="2"></td></tr>
+	<tr><td>Payment Address: </td><td><input type="text" name="paymentAddress" value="<?php echo antiXss($paymentAddress)?>" size="40"></td></tr>
+	<tr><td>Donation %: </td><td><input type="text" name="donatePercent" value="<?php echo antiXss($donatePercent);?>" size="4"></td></tr>
+	<tr><td>Automatic Payout: </br>(1-25 BTC, 0 for manual)</td><td valign="top"><input type="text" name="payoutThreshold" value="<?php echo antiXss($payoutThreshold);?>" size="2" maxlength="2"></td></tr>
 	<tr><td>Authorize Pin: </td><td><input type="password" name="authPin" size="4" maxlength="4"></td></tr>
 </table>
 <input type="submit" value="Update Account Settings"></form>
@@ -198,8 +199,8 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <form action="/accountdetails.php" method="post">
 <input type="hidden" name="act" value="cashOut">
 <table>
-	<tr><td>Account Balance: </td><td><?php echo $currentBalance; ?></td></tr>
-	<tr><td>Payout to: </td><td><?php echo $paymentAddress; ?></td></tr>
+	<tr><td>Account Balance: </td><td><?php echo antiXss($currentBalance); ?></td></tr>
+	<tr><td>Payout to: </td><td><?php echo antiXss($paymentAddress); ?></td></tr>
 	<tr><td>Authorize Pin: </td><td><input type="password" name="authPin" size="4" maxlength="4"></td></tr>
 </table>
 <input type="submit" value="Cash Out"></form>
@@ -239,10 +240,10 @@ while($worker = mysql_fetch_array($getWorkers)){
 	//value="<?php echo $worker["password"]/>"> <input type="submit"
 	//value="Update"></form>
 	?>
-	<tr><td <?php if ($worker["active"] == 0) { ?>style="color: red"<?php } ?>><?php echo $userInfo->username; ?>.<?php echo $realUsername; ?></td>
-	    <td><?php echo $worker["password"]?></td>
+	<tr><td <?php if ($worker["active"] == 0) { ?>style="color: red"<?php } ?>><?php echo antiXss($userInfo->username); ?>.<?php echo antiXss($realUsername); ?></td>
+	    <td><?php echo antiXss($worker["password"]);?></td>
 	    <td><?php if ($worker["active"] == 1) echo "Y"; else echo "N"; ?>
-	    <td><?php echo $worker["hashrate"]?></td></tr></tr>
+	    <td><?php echo antiXss($worker["hashrate"])?></td></tr></tr>
 	<?php
 }
 ?>
@@ -251,7 +252,7 @@ while($worker = mysql_fetch_array($getWorkers)){
 <form action="/accountdetails.php" method="post"><input type="hidden"
 	name="act" value="addWorker"><!--  AuthPin:<input type="password"
 	name="authPin" size="4" maxlength="4"><br /> -->
-<?php echo $userInfo->username;?>.<input type="text" name="username"
+<?php echo antiXss($userInfo->username);?>.<input type="text" name="username"
 	value="user" size="10" maxlength="20"> &middot; <input type="text"
 	name="pass" value="pass" size="10" maxlength="20"> <input type="submit"
 	value="Add worker"></form>
