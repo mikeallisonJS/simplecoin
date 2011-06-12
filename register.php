@@ -52,7 +52,7 @@ if (isset($_POST["act"]))
 		$rPass		= mysql_real_escape_string($_POST["pass2"]);
 		$email		= mysql_real_escape_string($_POST["email"]);
 		$email2		= mysql_real_escape_string($_POST["email2"]);
-		$authPin	= (int) $_POST["authPin"];
+		$authPin	= mysql_real_escape_string($_POST["authPin"]);
 	
 		$validRegister = 1;
 			//Validate username
@@ -84,9 +84,9 @@ if (isset($_POST["act"]))
 				}
 			}
 			
-			//valid date authpin is valid
+			//validate authpin
 			if(strlen($authPin) >= 4){
-				if(!is_int($authPin)){
+				if(!is_numeric($authPin)){
 					$validRegister = 0;
 					$returnError .= " | Not a valid authpin";
 				}
