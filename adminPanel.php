@@ -66,7 +66,7 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 	<!--Begin main page edits-->
 	<form action="/adminPanel.php" method="post">
 		<input type="hidden" name="act" value="UpdateMainPageSettings">
-		Page Title <input type="text" name="pageTitle" value="<?php echo antiXss($input))$settings->getsetting("pagetitle");?>"><br/>
+		Page Title <input type="text" name="pageTitle" value="<?php echo antiXss($settings->getsetting("pagetitle"));?>"><br/>
 		Header Title <input type="text" name="headerTitle" value="<?php echo antiXss($settings->getsetting("websitename"));?>"><br/>
 		Header Slogan <input type="text" name="headerSlogan" value="<?php echo antiXss($settings->getsetting("slogan"));?>"><br/>
 		Percentage Fee <input type="text" name="percentageFee" size="10" maxlength="10" value="<?php echo antiXss($settings->getsetting("sitepercent")); ?>">%<br/>
