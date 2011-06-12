@@ -28,8 +28,8 @@ if(isSet($_COOKIE[$cookieName])){
 	$userId	= $validateCookie->returnUserId($_COOKIE[$cookieName]);		
 	
 	//ensure userId is integer to prevent sql injection attack
-	if (!is_int($userId)) {
-		$userId =0;	
+	if (!is_numeric($userId)) {
+		$userId = 0;	
 		exit;
 	}
 		
