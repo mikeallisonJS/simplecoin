@@ -182,15 +182,15 @@ for($i = 0; $i < $numAccounts; $i++){
 
 if ($settings->getsetting("siterewardtype") == 0) {
 	//Cheat-proof scoring:
-	$blocksQ = mysql_query("SELECT DISTINCT s.blockNumber FROM shares_history s, networkBlocks n WHERE s.blockNumber = n.blocknumber AND s.counted=0 AND n.confirms > 119 ORDER BY s.blockNumber DESC LIMIT 1");
+	$blocksQ = mysql_query("SELECT DISTINCT s.blockNumber FROM shares_history s, networkBlocks n WHERE s.blockNumber = n.blocknumber AND s.counted='0' AND n.confirms > 119 ORDER BY s.blockNumber DESC LIMIT 1");
 	while ($blocks = mysql_fetch_object($blocksQ)) {
 		$block = $blocks->blockNumber;
 	
-		$totalscoreQ = mysql_query("SELECT (sum(exp(s1.score-s2.score))+exp(".$los."-s2.score)) AS score FROM shares_history s1, shares_history s2 WHERE s2.id = s1.id - 1 AND s1.counted = 0 AND s1.blockNumber <= ".$block);
+		$totalscoreQ = mysql_query("SELECT (sum(exp(s1.score-s2.score))+exp(".$los."-s2.score)) AS score FROM shares_history s1, shares_history s2 WHERE s2.id = s1.id - 1 AND s1.counted = '0' AND s1.blockNumber <= ".$block);
 		$totalscoreR = mysql_fetch_object($totalscoreQ);
 		$totalscore = $totalscoreR->score; 	
 		
-		$userListCountQ = mysql_query("SELECT DISTINCT s1.username, count(s1.id) AS id, sum(exp(s1.score-s2.score)) AS score FROM shares_history s1, shares_history s2 WHERE s2.id = s1.id -1 AND s1.counted = 0 AND s1.blockNumber <= ".$block." GROUP BY username");
+		$userListCountQ = mysql_query("SELECT DISTINCT s1.username, count(s1.id) AS id, sum(exp(s1.score-s2.score)) AS score FROM shares_history s1, shares_history s2 WHERE s2.id = s1.id -1 AND s1.counted = '0' AND s1.blockNumber <= ".$block." GROUP BY username");
 		while ($userListCountR = mysql_fetch_object($userListCountQ)) {
 			$username = $userListCountR->username;
 			$uncountedShares = $userListCountR->id;
@@ -224,7 +224,7 @@ if ($settings->getsetting("siterewardtype") == 0) {
 				if (!$updateOk)
 					mysql_query("INSERT INTO accountBalance (userId, balance) VALUES (".$ownerId.",'".$totalReward."')");					
 			}	
-			mysql_query("UPDATE shares_history SET counted = 1 WHERE username='".$username."' AND blockNumber <= ".$block);			
+			mysql_query("UPDATE shares_history SET counted = '1' WHERE username='".$username."' AND blockNumber <= ".$block);			
 		}	
 		$poolReward = $B -$overallReward;
 		mysql_query("UPDATE settings SET value = value +".$poolReward." WHERE setting='sitebalance'");
@@ -234,13 +234,13 @@ if ($settings->getsetting("siterewardtype") == 0) {
 	//Go through all of `shares_history` that are uncounted shares; Check if there are enough confirmed blocks to award user their BTC
 	//Get uncounted shares
 	$overallReward = 0;
-	$blocksQ = mysql_query("SELECT DISTINCT s.blockNumber FROM shares_history s, networkBlocks n WHERE s.blockNumber = n.blocknumber AND s.counted=0 AND n.confirms > 119 ORDER BY s.blockNumber ASC");
+	$blocksQ = mysql_query("SELECT DISTINCT s.blockNumber FROM shares_history s, networkBlocks n WHERE s.blockNumber = n.blocknumber AND s.counted='0' AND n.confirms > 119 ORDER BY s.blockNumber ASC");
 	while ($blocks = mysql_fetch_object($blocksQ)) {
 		$block = $blocks->blockNumber;
-		$totalRoundSharesQ = mysql_query("SELECT count(id) as id FROM shares_history WHERE counted = 0 AND blockNumber <= ".$block);
+		$totalRoundSharesQ = mysql_query("SELECT count(id) as id FROM shares_history WHERE counted = '0' AND blockNumber <= ".$block);
 		if ($totalRoundSharesR = mysql_fetch_object($totalRoundSharesQ)) {
 			$totalRoundShares = $totalRoundSharesR->id;
-			$userListCountQ = mysql_query("SELECT DISTINCT username, count(id) as id FROM shares_history WHERE counted = 0 AND blockNumber <= ".$block." GROUP BY username");
+			$userListCountQ = mysql_query("SELECT DISTINCT username, count(id) as id FROM shares_history WHERE counted = '0' AND blockNumber <= ".$block." GROUP BY username");
 			while ($userListCountR = mysql_fetch_object($userListCountQ)) {
 				$username = $userListCountR->username;
 				$uncountedShares = $userListCountR->id;
@@ -276,7 +276,7 @@ if ($settings->getsetting("siterewardtype") == 0) {
 					if (!$updateOk)
 						mysql_query("INSERT INTO accountBalance (userId, balance) VALUES (".$ownerId.",'".$totalReward."')");
 				}
-				mysql_query("UPDATE shares_history SET counted = 1 WHERE username='".$username."' AND blockNumber <= ".$block);							
+				mysql_query("UPDATE shares_history SET counted = '1' WHERE username='".$username."' AND blockNumber <= ".$block);							
 			}
 		}
 		$poolReward = $B -$overallReward;
