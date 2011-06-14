@@ -20,23 +20,23 @@
 //Set page starter variables//
 $includeDirectory = "/var/www/includes/";
 
-//Include hashing functions
+//Include site functions
 include($includeDirectory."requiredFunctions.php");
 
-
-include($includeDirectory.'stats.php');
 include($includeDirectory.'mtgox.php');
 
-$stats = new Stats();
-$mtgox = new mtgox("", "");
-//try {
+//Update MtGox last price, bypass if failed
+try {
+	$mtgox = new mtgox("", "");
+	$ticker = $mtgox->ticker();
+	if (intval($ticker['last']) > 0) $settings->setsetting('mtgoxlast', $ticker['last']);
+} catch (Exception $e) { }
+
 //Open a bitcoind connection
 $bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
 
-//Get some current block number
+//Get current block number & difficulty
 $currentBlockNumber = $bitcoinController->getblocknumber();
-
-//Get difficulty
 $difficulty = $bitcoinController->query("getdifficulty");
 
 //Get site percentage
@@ -101,7 +101,7 @@ if(!$inDatabase){
 			//Move all old shares from `shares` and move them to `shares_history`
 			if($shareHistoryQ){
 				//Delete all from shares whoms "id" is less then $lastId to prevent new "hard-earned" shares to be deleted
-				mysql_query("DELETE FROM `shares` WHERE `id` <= ".$lastId);
+				mysql_query("DELETE FROM shares WHERE id <= ".$lastId);
 			}	
 			$i = 0;
 		}
@@ -112,10 +112,9 @@ if(!$inDatabase){
 	//Move all old shares from `shares` and move them to `shares_history`
 	if($shareHistoryQ){
 		//Delete all from shares whoms "id" is less then $lastId to prevent new "hard-earned" shares to be deleted
-		mysql_query("DELETE FROM `shares` WHERE `id` <= ".$lastId);
+		mysql_query("DELETE FROM shares WHERE id <= ".$lastId);
 	}
 }		
-	
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +132,7 @@ for($i = 0; $i < $numAccounts; $i++){
 	if($transactions[$i]["amount"] >= 50 && $transactions[$i]["category"] == "generate"){		
 		//At this point we may or may not have found a block,
 		//Check to see if this account addres is already added to `networkBlocks`
-		$accountExistsQ = mysql_query("SELECT `id` FROM `networkBlocks` WHERE `accountAddress` = '".$transactions[$i]["txid"]."' ORDER BY `blockNumber` DESC LIMIT 0,1")or die(mysql_error());
+		$accountExistsQ = mysql_query("SELECT id FROM networkBlocks WHERE accountAddress = '".$transactions[$i]["txid"]."' ORDER BY blockNumber DESC LIMIT 0,1")or die(mysql_error());
 		$accountExists = mysql_num_rows($accountExistsQ);
 
 		//If the account dosen't exist that means we found a block, now add it to the database so we can track the confirms
@@ -145,15 +144,9 @@ for($i = 0; $i < $numAccounts; $i++){
 			//Get last confirmed block
 			$lastSuccessfullBlockQ = mysql_query("SELECT n.id FROM shares_history s, networkBlocks n WHERE n.blockNumber = s.blockNumber AND s.upstream_result='Y' ORDER BY s.id DESC LIMIT 1 ");
 			$lastSuccessfullBlockR = mysql_fetch_object($lastSuccessfullBlockQ);
-			$lastEmptyBlock = $lastSuccessfullBlockR->id;
-			
-			//Get last empty block so we can input it the address for confirm tracking
-//			$lastEmptyBlockQ = mysql_query("SELECT `id`, `blockNumber` FROM `networkBlocks` WHERE `accountAddress` = '' ORDER BY `blockNumber` DESC LIMIT 0,1");
-//			$lastEmptyBlockObj = mysql_fetch_object($lastEmptyBlockQ);
-//			$lastEmptyBlock = $lastEmptyBlockObj->id;
-//			$lastEmptyBlockNumber = $lastEmptyBlockObj->blockNumber;
+			$lastEmptyBlock = $lastSuccessfullBlockR->id;			
 
-			$insertBlockSuccess = mysql_query("UPDATE `networkBlocks` SET `accountAddress` = '".$transactions[$i]["txid"]."' WHERE `id` = '$lastEmptyBlock'")or die(mysql_error());
+			$insertBlockSuccess = mysql_query("UPDATE networkBlocks SET accountAddress = '".$transactions[$i]["txid"]."' WHERE id = ".$lastEmptyBlock)or die(mysql_error());
 		}
 	}
 }
@@ -165,7 +158,7 @@ for($i = 0; $i < $numAccounts; $i++){
 		{
 		//Check to see if this account was one of the winning accounts from `networkBlocks`
 		$arrayAddress = $transactions[$i]["txid"];
-		$winningAccountQ = mysql_query("SELECT `id` FROM `networkBlocks` WHERE `accountAddress` = '$arrayAddress' LIMIT 0,1");
+		$winningAccountQ = mysql_query("SELECT id FROM networkBlocks WHERE accountAddress = '".$arrayAddress." LIMIT 0,1");
 		$winningAccount = mysql_num_rows($winningAccountQ);
 	
 		if($winningAccount > 0){
@@ -175,7 +168,7 @@ for($i = 0; $i < $numAccounts; $i++){
 			$confirms = $transactions[$i]["confirmations"];
 	
 			//Update X amount of confirms
-			mysql_query("UPDATE `networkBlocks` SET `confirms` = '$confirms' WHERE `id` = '$winningId'");
+			mysql_query("UPDATE networkBlocks SET confirms = '".$confirms."' WHERE id = ".$winningId);
 		}
 	}
 }
@@ -280,12 +273,8 @@ if ($settings->getsetting("siterewardtype") == 0) {
 			}
 		}
 		$poolReward = $B -$overallReward;
-		mysql_query("UPDATE settings SET value = value +".$poolReward." WHERE setting='sitebalance'");	
+		mysql_query("UPDATE settings SET value = value +".$poolReward." WHERE setting='sitebalance'");
 	}
 }
-
-$ticker = $mtgox->ticker();
-
-if (intval($ticker['last']) > 0) $settings->setsetting('mtgoxlast', $ticker['last']);
 
 ?>

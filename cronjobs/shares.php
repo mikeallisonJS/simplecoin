@@ -43,6 +43,7 @@ try {
 	}
 } catch (Exception $ex)  {}
 
+//Update current round shares
 try {
 	$sql ="select sum(id) as id, a.associatedUserId from ".
 		  "(select count(s.id) as id, p.associatedUserId from shares s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' group by p.associatedUserId  ".
@@ -54,6 +55,7 @@ try {
 		mysql_query("UPDATE webUsers SET shares_this_round=".$row["id"]." WHERE id=".$row["associatedUserId"]);
 		$totalsharesthisround += $row["id"];
 	}
+	mysql_query("UPDATE settings SET value='".$totalsharesthisround."' WHERE setting='currentroundshares'");
 } catch (Exception $ex)  {}
-mysql_query("UPDATE settings SET value='".$totalsharesthisround."' WHERE setting='currentroundshares'");
+
 ?>

@@ -27,7 +27,7 @@ if(!$cookieValid || $isAdmin != 1) {
 	exit;
 }
 
-if (isset($act))
+if (isset($_POST["act"]))
 {
 	$act = mysql_real_escape_string($_POST["act"]);
 	$inputAuthPin = hash("sha256", $_POST["authPin"].$salt);

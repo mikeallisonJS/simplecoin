@@ -100,15 +100,20 @@ if (isset($_POST["act"]))
 			$emailAuthPin = genRandomString(10);
 			$secret = genRandomString(10);
 			$apikey = hash("sha256",$username.$salt);
-			connectToDb();
-			$result = mysql_query("INSERT INTO webUsers (`admin`, `username`, `pass`, `email`, `emailAuthPin`, `secret`, `loggedIp`, `sessionTimeoutStamp`, `accountLocked`, `accountFailedAttempts`, `pin`, api_key) 
-									VALUES ('0', '".$username."', '".hash("sha256",$pass.$salt)."', '".$email."', '".$emailAuthPin."', '".$secret."', '0', '0', '0', '0', '".hash("sha256", $authPin.$salt)."','".$apikey."')");
-			$returnId = mysql_insert_id();
-			mysql_query("INSERT INTO accountBalance (userId, balance) VALUES (".$returnId.",'0')");
-			mysql_query("INSERT INTO pool_worker (associatedUserId, username, password) VALUES (".$returnId.",'".$username.".1','x')");
-			$goodMessage = "Your account has been successfully created. Please login to continue.";
-		}
-		
+			//Check to see if user exists already
+			$testUserQ = mysql_query("SELECT id FROM webUsers WHERE username = '".$username."' LIMIT 1");
+			//If not, create new user
+			if (!$testUserQ) {			
+				$result = mysql_query("INSERT INTO webUsers (admin, username, pass, email, emailAuthPin, secret, loggedIp, sessionTimeoutStamp, accountLocked, accountFailedAttempts, pin, api_key) 
+										VALUES (0, '".$username."', '".hash("sha256", $pass.$salt)."', '".$email."', '".$emailAuthPin."', '".$secret."', '0', '0', '0', '0', '".hash("sha256", $authPin.$salt)."','".$apikey."')");
+				$returnId = mysql_insert_id();
+				mysql_query("INSERT INTO accountBalance (userId, balance) VALUES (".$returnId.",'0')");
+				mysql_query("INSERT INTO pool_worker (associatedUserId, username, password) VALUES (".$returnId.",'".$username.".1','x')");
+				$goodMessage = "Your account has been successfully created. Please login to continue.";
+			} else {
+				$returnError = "Account already exists. Please choose a different username.";
+			}
+		}		
 	}
 }
 

@@ -42,7 +42,7 @@ include("bitcoinController/bitcoin.inc.php");
 
 //Encrypt settings
 $salt = "123483jd7Dg6h5s92k"; //Just type a random series of numbers and letters; set it to anything or any length you want. "You can never have enough salt."
-$cookieValid	= false; //Don't touch leave as: false
+$cookieValid = false; //Don't touch leave as: false
 
 connectToDb();
 include('settings.php');

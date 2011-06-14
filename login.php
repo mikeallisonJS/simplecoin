@@ -21,19 +21,15 @@ Note From Author: Keep the original donate address in the source files when tran
 Please donate at the following address: 1Fc2ScswXAHPUgj3qzmbRmwWJSLL2yv8Q
 */
 //This page will attempt to take informtion from the user and create an ecrypted session inside of a cookie
-//Set page starter variables//
-$cookieValid = 0;
 
-//Include hashing functions
+//Include site functions
 include("includes/requiredFunctions.php");
-	
-	
+		
 //Filter input results before querying them into database
 $user = mysql_real_escape_string($_POST["username"]);
 $pass = mysql_real_escape_string($_POST["password"]);
 
 //Check the supplied username & password with the saved username & password
-connectToDb();
 $checkPassQ = mysql_query("SELECT id, secret, pass, accountLocked, accountFailedAttempts FROM webUsers WHERE username = '".$user."' LIMIT 0,1");
 $checkPass = mysql_fetch_object($checkPassQ);
 $userExists = $checkPass->id;
@@ -59,12 +55,12 @@ if($userExists > 0){
 				$hash		= $checkPass->secret.$dbHash.$ip.$timeoutStamp;
 				$cookieHash = hash("sha256", $hash.$salt);
 				setcookie($cookieName, $checkPass->id."-".$cookieHash, $timeoutStamp, $cookiePath, $cookieDomain);
-				$cookieValid = 1;
+				$cookieValid = true;
 			
 				//Display output message
 				$outputMessage = "Welcome back, we'll be returning to the main page shortly";	
 			}else{
-				$outputMessage =  "Wrong username or password? Huh? I copy and pasted how could it be wrong?...!!";
+				$outputMessage =  "Wrong username or password.";
 			}
 		}
 	}
@@ -81,7 +77,7 @@ if($userExists > 0){
   <body>
 	<div id="pagecontent">
 		<h1><?php echo antiXss($outputMessage); ?><br/>
-		<a href="/">Click here if you continue to see this message</a></h1>
+		<a href="/" style="color:blue">Click here if you continue to see this message</a></h1>
 	</div>
   </body>
 </html>

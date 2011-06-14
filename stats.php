@@ -55,4 +55,5 @@ if ($resultrow = mysql_fetch_object($result)) {
 	?>
 </table></td></tr>
 </table>
-<?php include("includes/footer.php"); ?>				
+
+<?php include("includes/footer.php"); ?>
