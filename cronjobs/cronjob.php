@@ -45,16 +45,16 @@ $sitePercentQ = mysql_query("SELECT value FROM settings WHERE setting='siteperce
 if ($sitePercentR = mysql_fetch_object($sitePercentQ)) $sitePercent = $sitePercentR->value;				
 
 //Setup score variables
-$c = .001;
-$f=1;
+$feeVariance = .001;
+$fee = 1;
 if ($sitePercent > 0)
-	$f = $sitePercent / 100;
+	$fee = $sitePercent / 100;
 else
-	$f = (-$c)/(1-$c);
-$p = 1.0/$difficulty;
-$r = log(1.0-$p+$p/$c);
-$B = 50;
-$los = log(1/(exp($r)-1));
+	$fee = (-$feeVariance)/(1-$feeVariance);
+$difficultyRatio = 1.0/$difficulty;
+$logRatio = log(1.0-$difficultyRatio+$difficultyRatio/$feeVariance);
+$bonusCoins = 50;
+$los = log(1/(exp($logRatio)-1));
 
 //Is this block number in the database already
 $inDatabaseQ = mysql_query("SELECT `id` FROM `networkBlocks` WHERE `blockNumber` = '$currentBlockNumber' LIMIT 0,1");
@@ -66,35 +66,41 @@ if(!$inDatabase){
 	mysql_query("INSERT INTO `networkBlocks` (`blockNumber`, `timestamp`) VALUES ('$currentBlockNumber', '$currentTime')");
 		
 	//Don't delete shares until a new block is started
-	//Go through every share and add it to the shares_history database
-	$shareInputQ = "";
-	$i=0;
+	//Go through every share and add it to the shares_history database		
+	
+	//Get last Id
 	$lastId = 0;
-	//Get last score
+	$lastShareId = 0;
+	$lastShareQ = mysql_query("SELECT id FROM shares ORDER BY id DESC LIMIT 1");
+	if ($lastShareR = mysql_fetch_object($lastShareQ)) {
+		$lastShareId = $lastShareR->id; 
+	}
+	
+	//Save winning share (if there is one)
+	$winningShareQ = mysql_query("SELECT DISTINCT username FROM shares where upstream_result = 'Y'");
+	while ($winningShareR = mysql_fetch_object($winningShareQ)) {		
+		mysql_query("INSERT INTO winning_shares (blockNumber, username) VALUES (".$currentBlockNumber.",'".$winningShareR->username."')");
+	}	
+	
+	//Select all shares	 
 	$lastScore = 0;
-
-	//Select all shares
-	$getAllShares = mysql_query("SELECT `id`, `rem_host`, `username`, `our_result`, `upstream_result`, `reason`, `solution`, time FROM `shares` ORDER BY `id` ASC");	
+	$shareInputQ = "";
+	$getAllShares = mysql_query("SELECT id, username, our_result, time FROM `shares` ORDER BY `id` ASC");	
 	while($share = mysql_fetch_array($getAllShares)){
-		if ($i==0)
-			$shareInputQ = "INSERT INTO `shares_history` (`blockNumber`, `rem_host`, `username`, `our_result`, `upstream_result`, `reason`, `solution`, time, score) VALUES ";
+		if ($i == 0)
+			$shareInputQ = "INSERT INTO shares_history (blockNumber, username, our_result, time, score, counted) VALUES ";
 		$i++;
-		if($i > 1){
-			$shareInputQ .= ",";
-		}
-		$score = $lastScore + $r;
-		$shareInputQ .="('".$currentBlockNumber."',
-						'".$share["rem_host"]."',
+		if ($i > 1)
+			$shareInputQ .= ",";		
+		$score = $lastScore + $logRatio;
+		$shareInputQ .="('".$currentBlockNumber."',						
 						'".$share["username"]."',
-						'".$share["our_result"]."',
-						'".$share["upstream_result"]."',
-						'".$share["reason"]."',
-						'".$share["solution"]."',
+						'".$share["our_result"]."',																		
 						'".$share["time"]."',
-						".$score.")";
+						".$score.",'0')";
 		$lastId = $share["id"];
 		$lastScore = $score;				
-		if ($i > 5) {
+		if ($i > 20) {
 			//Add to `shares_history`
 			$shareHistoryQ = mysql_query($shareInputQ);
 
@@ -107,7 +113,8 @@ if(!$inDatabase){
 		}
 	}
 	//Add to `shares_history`
-	$shareHistoryQ = mysql_query($shareInputQ);
+	if ($shareHistoryQ != "")
+		$shareHistoryQ = mysql_query($shareInputQ);
 
 	//Move all old shares from `shares` and move them to `shares_history`
 	if($shareHistoryQ){
@@ -138,11 +145,11 @@ for($i = 0; $i < $numAccounts; $i++){
 		//If the account dosen't exist that means we found a block, now add it to the database so we can track the confirms
 		if(!$accountExists){					
 			//Update site balance for tx fee
-			$poolReward = $transactions[$i]["amount"] - $B;
+			$poolReward = $transactions[$i]["amount"] - $bonusCoins;
 			mysql_query("UPDATE settings SET value = value +".$poolReward." WHERE setting='sitebalance'");
 									
-			//Get last confirmed block
-			$lastSuccessfullBlockQ = mysql_query("SELECT n.id FROM shares_history s, networkBlocks n WHERE n.blockNumber = s.blockNumber AND s.upstream_result='Y' ORDER BY s.id DESC LIMIT 1 ");
+			//Get last winning block			
+			$lastSuccessfullBlockQ = mysql_query("SELECT n.id FROM networkBlocks n, winning_shares w where n.blockNumber = w.blockNumber ORDER BY w.id DESC LIMIT 1");
 			$lastSuccessfullBlockR = mysql_fetch_object($lastSuccessfullBlockQ);
 			$lastEmptyBlock = $lastSuccessfullBlockR->id;			
 
@@ -159,16 +166,19 @@ for($i = 0; $i < $numAccounts; $i++){
 		//Check to see if this account was one of the winning accounts from `networkBlocks`
 		$arrayAddress = $transactions[$i]["txid"];
 		$winningAccountQ = mysql_query("SELECT id FROM networkBlocks WHERE accountAddress = '".$arrayAddress." LIMIT 0,1");
-		$winningAccount = mysql_num_rows($winningAccountQ);
+		if ($winningAccountQ) {
+			$winningAccount = mysql_num_rows($winningAccountQ);
+		
 	
-		if($winningAccount > 0){
-			//This is a winning account
-			$winningAccountObj	= mysql_fetch_object($winningAccountQ);
-			$winningId	= $winningAccountObj->id;
-			$confirms = $transactions[$i]["confirmations"];
-	
-			//Update X amount of confirms
-			mysql_query("UPDATE networkBlocks SET confirms = '".$confirms."' WHERE id = ".$winningId);
+			if($winningAccount > 0){
+				//This is a winning account
+				$winningAccountObj	= mysql_fetch_object($winningAccountQ);
+				$winningId	= $winningAccountObj->id;
+				$confirms = $transactions[$i]["confirmations"];
+		
+				//Update X amount of confirms
+				mysql_query("UPDATE networkBlocks SET confirms = '".$confirms."' WHERE id = ".$winningId);
+			}
 		}
 	}
 }
@@ -195,7 +205,7 @@ if ($settings->getsetting("siterewardtype") == 0) {
 			$ownerId = $ownerIdObj->associatedUserId;
 			$donatePercent = $ownerIdObj->donate_percent;
 			
-			$predonateAmount = (1-$f)*$B*$score/$totalscore;
+			$predonateAmount = (1-$fee)*$bonusCoins*$score/$totalscore;
 			$predonateAmount = rtrim(sprintf("%f",$predonateAmount ),"0");	
 	
 			if ($predonateAmount > 0.00000001)
@@ -215,11 +225,11 @@ if ($settings->getsetting("siterewardtype") == 0) {
 				//Update balance
 				$updateOk = mysql_query("UPDATE accountBalance SET balance = balance + ".$totalReward." WHERE userId = ".$ownerId);				
 				if (!$updateOk)
-					mysql_query("INSERT INTO accountBalance (userId, balance) VALUES (".$ownerId.",'".$totalReward."')");					
+					mysql_query("INSERT INTO accountBalance (userId, balance) VALUES (".$ownerId.",'".$totalReward."')");									
 			}	
 			mysql_query("UPDATE shares_history SET counted = '1' WHERE username='".$username."' AND blockNumber <= ".$block);			
 		}	
-		$poolReward = $B -$overallReward;
+		$poolReward = $bonusCoins -$overallReward;
 		mysql_query("UPDATE settings SET value = value +".$poolReward." WHERE setting='sitebalance'");
 	}
 } else {
@@ -238,7 +248,7 @@ if ($settings->getsetting("siterewardtype") == 0) {
 				$username = $userListCountR->username;
 				$uncountedShares = $userListCountR->id;
 				$shareRatio = $uncountedShares/$totalRoundShares;
-				$predonateAmount = (1-$f)*(50*$shareRatio);				
+				$predonateAmount = (1-$fee)*(50*$shareRatio);				
 							
 				//get owner userId and donation percent
 				$ownerIdQ = mysql_query("SELECT p.associatedUserId, u.donate_percent FROM pool_worker p, webUsers u WHERE u.id = p.associatedUserId AND p.username = '".$username."' LIMIT 0,1");
@@ -272,7 +282,7 @@ if ($settings->getsetting("siterewardtype") == 0) {
 				mysql_query("UPDATE shares_history SET counted = '1' WHERE username='".$username."' AND blockNumber <= ".$block);							
 			}
 		}
-		$poolReward = $B -$overallReward;
+		$poolReward = $bonusCoins -$overallReward;
 		mysql_query("UPDATE settings SET value = value +".$poolReward." WHERE setting='sitebalance'");
 	}
 }

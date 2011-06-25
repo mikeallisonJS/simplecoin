@@ -28,7 +28,7 @@ CREATE TABLE `accountBalance` (
   `balance` varchar(40) DEFAULT NULL,
   `sendAddress` varchar(255) DEFAULT '',
   `paid` varchar(40) DEFAULT '0',
-  `threshold` tinyint(4) DEFAULT 0,
+  `threshold` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`),
   KEY `b_userId` (`userId`)
@@ -84,7 +84,8 @@ DROP TABLE IF EXISTS `settings`;
 CREATE TABLE `settings` (
   `setting` varchar(255) NOT NULL,
   `value` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`setting`)
+  PRIMARY KEY (`setting`),
+  KEY `set_setting` (`setting`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -120,6 +121,24 @@ CREATE TABLE `shares` (
 
 
 --
+-- Table structure for table `shares_counted`
+--
+
+DROP TABLE IF EXISTS `shares_counted`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `shares_counted` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `blockNumber` int(11) NOT NULL,
+  `userId` int(11) NOT NULL,
+  `count` int(11) NOT NULL,
+  `invalid` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
 -- Table structure for table `shares_history`
 --
 
@@ -128,18 +147,15 @@ DROP TABLE IF EXISTS `shares_history`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `shares_history` (
   `id` bigint(30) NOT NULL AUTO_INCREMENT,
-  `counted` int(1) NOT NULL COMMENT 'BOOLEAN) Tells server if it used these shares for counting',
   `blockNumber` int(255) NOT NULL,
-  `rem_host` varchar(255) NOT NULL,
   `username` varchar(120) NOT NULL,
   `our_result` enum('Y','N') NOT NULL,
-  `upstream_result` enum('Y','N') DEFAULT NULL,
-  `reason` varchar(50) DEFAULT NULL,
-  `solution` varchar(257) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `score` double(23,2) DEFAULT NULL,
+  `score` double(10,2) NOT NULL DEFAULT '0.00',
+  `counted` enum('0','1') NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sh_blocknumber` (`blockNumber`),
+  KEY `sh_username` (`username`),
   KEY `sh_counted` (`counted`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -173,9 +189,27 @@ CREATE TABLE `webUsers` (
   `hashrate` int(11) DEFAULT NULL,
   `donate_percent` varchar(11) DEFAULT '0',
   `round_estimate` varchar(40) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `u_username` (`username`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
+-- Table structure for table `winning_shares`
+--
+
+DROP TABLE IF EXISTS `winning_shares`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `winning_shares` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `blockNumber` int(11) NOT NULL,
+  `username` varchar(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Dumping routines for database 'simplecoin'

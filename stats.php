@@ -25,7 +25,7 @@ $bitcoincon = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword);
 echo "Current Block: ".antiXss($bitcoincon->getblocknumber())."<br/>";
 echo "Current Difficulty: ".round($bitcoincon->getdifficulty(), 2)."<br/>";
 
-$result = mysql_query("SELECT blockNumber, confirms, timestamp FROM networkBlocks WHERE confirms > 119 ORDER BY blockNumber DESC LIMIT 1");
+$result = mysql_query("SELECT n.blockNumber, n.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT 1");
 if ($resultrow = mysql_fetch_object($result)) {
 	echo "Last Block Found: ".$resultrow->blockNumber."<br/>";
 	echo "Confirmations: ".$resultrow->confirms."<br/>";

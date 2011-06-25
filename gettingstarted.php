@@ -30,7 +30,7 @@ Or download the client to your PC from: <a href="http://www.bitcoin.org//" targe
 You will need to download and install the AMD Stream SDK from  <a href="http://developer.amd.com/SDKS/AMDAPPSDK/DOWNLOADS/Pages/default.aspx" target="_blank" style="color: blue">HERE</a> before you can begin mining<br/><br/> 
 
 	<b><u>Windows</u></b><br/>
-	Download GUIMiner: <a href="/files/guiminer-20110521.exe" style="color: blue">HERE</a><br>
+	Download GUIMiner: <a href="/files/guiminer-20110614.exe" style="color: blue">HERE</a><br>
 	<img src="/images/guiminer.jpg"><br/>
 	<u>GUIMiner options</u><br/>
 	Server: Other</br>

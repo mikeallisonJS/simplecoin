@@ -20,35 +20,22 @@ $includeDirectory = "/var/www/includes/";
 
 include($includeDirectory."requiredFunctions.php");
 	
-/////////Update share counts
-try {
-	$sql ="select sum(id) as id, a.associatedUserId from ".
-		  "(select count(s.id) as id, p.associatedUserId from shares s, pool_worker p WHERE p.username=s.username group by p.associatedUserId ".
-		  "union ".
-		  "select count(s.id) as id, p.associatedUserId from shares_history s, pool_worker p WHERE p.username=s.username group by p.associatedUserId) a group by associatedUserId";
-	$result = mysql_query($sql);
-	while ($row = mysql_fetch_array($result)) {
-		mysql_query("UPDATE webUsers SET share_count=".$row["id"]." WHERE id=".$row["associatedUserId"]);
-	}
-} catch (Exception $ex)  {}
+////Update share counts
 
+//Update past shares
 try {
-	$sql ="select sum(id) as id, a.associatedUserId from ".
-		  "(select count(s.id) as id, p.associatedUserId from shares s, pool_worker p WHERE p.username=s.username AND s.our_result='N' group by p.associatedUserId  ".
-		  "union ".
-		  "select count(s.id) as id, p.associatedUserId from shares_history s, pool_worker p WHERE p.username=s.username AND s.our_result='N' group by p.associatedUserId) a group by associatedUserId ";
-	$result = mysql_query($sql);
-	while ($row = mysql_fetch_array($result)) {
-		mysql_query("UPDATE webUsers SET stale_share_count=".$row["id"]." WHERE id=".$row["associatedUserId"]);
-	}
+	$pastSharesQ = mysql_query("SELECT DISTINCT userId, sum(count) AS valid, sum(invalid) AS invalid, id FROM shares_counted GROUP BY userId");
+	while ($pastSharesR = mysql_fetch_object($pastSharesQ)) {
+		mysql_query("UPDATE webUsers SET share_count=".$pastSharesR->valid.", stale_share_count=".$pastSharesR->invalid." WHERE id=".$pastSharesR->userId);
+	} 
 } catch (Exception $ex)  {}
 
 //Update current round shares
 try {
-	$sql ="select sum(id) as id, a.associatedUserId from ".
-		  "(select count(s.id) as id, p.associatedUserId from shares s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' group by p.associatedUserId  ".
-		  "union ".
-		  "select count(s.id) as id, p.associatedUserId from shares_history s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' AND s.counted=0 group by p.associatedUserId) a group by associatedUserId ";
+	$sql ="SELECT sum(id) AS id, a.associatedUserId FROM ".
+		  "(SELECT count(s.id) AS id, p.associatedUserId FROM shares s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' GROUP BY p.associatedUserId  ".
+		  "UNION ".
+		  "SELECT count(s.id) AS id, p.associatedUserId FROM shares_history s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' AND s.counted='0' GROUP BY p.associatedUserId) a GROUP BY associatedUserId ";
 	$result = mysql_query($sql);
 	$totalsharesthisround = 0;
 	while ($row = mysql_fetch_array($result)) {
