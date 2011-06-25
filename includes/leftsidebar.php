@@ -47,8 +47,8 @@ Note From Author: Please donate at the following address: 1Fc2ScswXAHPUgj3qzmbRm
 		<?php
 			echo "Welcome Back, <i><b>".$userInfo->username."</b></i><br/><hr size='1' width='100%' /><br/>";
 			echo "Current Hashrate: <i><b>".$currentUserHashrate." MH/s</b></i><br/>";
-			echo "Lifetime Shares: <i><b>".$lifetimeUserShares."</b></i><br/>";
-			echo "Lifetime Invalid: <i><b>".$lifetimeUserInvalidShares."</b></i><br/>";
+			echo "Past Shares: <i><b>".$lifetimeUserShares."</b></i><br/>";
+			echo "Past Invalid: <i><b>".$lifetimeUserInvalidShares."</b></i><br/>";
 			echo "Valid This Round: <b><i>".$totalUserShares."</i> shares</b><br/>";
 			echo "Round Shares: <b><i>".$totalOverallShares."</i> shares</b><br/>";
 			echo "Est. Earnings: <b><i>".$userRoundEstimate."</i> BTC</b>";
