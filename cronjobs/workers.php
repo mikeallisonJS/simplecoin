@@ -16,6 +16,13 @@
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
+//Check that script is run locally
+$ip = $_SERVER['REMOTE_ADDR'];
+if ($ip != "127.0.0.1") {
+	echo "cronjobs can only be run locally.";
+	exit;
+}
+
 $includeDirectory = "/var/www/includes/";
 
 include($includeDirectory."requiredFunctions.php");
