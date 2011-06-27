@@ -33,16 +33,19 @@ $result = mysql_query("SELECT blockNumber, confirms, timestamp FROM networkBlock
 
 while($resultrow = mysql_fetch_object($result)) {
 	print("<tr>");
-	$resdss = mysql_query("SELECT username FROM shares_history WHERE upstream_result = 'Y' AND blockNumber = $resultrow->blockNumber");
+	$resdss = mysql_query("SELECT username FROM winning_shares WHERE blockNumber = $resultrow->blockNumber");
 	$resdss = mysql_fetch_object($resdss);
 
-	$resulta = mysql_query("SELECT userid, balanceDelta, userShares, totalShares FROM accountHistory WHERE blockNumber = '$resultrow->blockNumber' AND userid = '".$userId."'") or sqlerr(__FILE__, __LINE__);
+	$resulta = mysql_query("SELECT userid, count FROM shares_counted WHERE blockNumber = $resultrow->blockNumber AND userid = $userId");
 	$resdssa = mysql_fetch_object($resulta);
 
 	$blockNo = $resultrow->blockNumber;
 
-	$splitUsername = explode(".", $resdss->username);
-	$realUsername = $splitUsername[0];
+	$realUsername = "";
+	if ($resdss) {
+		$splitUsername = explode(".", $resdss->username);
+	    $realUsername = $splitUsername[0];
+	}
 
 	$confirms = $resultrow->confirms;
 
@@ -67,16 +70,16 @@ if($resdssa == NULL || $resdssa->balanceDelta == NULL){
 	}
 
 } ELSE  {
-	$est = number_format( $resdssa->balanceDelta, 8 );
-	$users = number_format( $resdssa->userShares );
-	$totals = number_format( $resdssa->totalShares );
+	//$est = number_format( $resdssa->balanceDelta, 8 );
+	$users = number_format( $resdssa->count );
+	//$totals = number_format( $resdssa->totalShares );
 }
 
 	echo "<td><a href=\"http://blockexplorer.com/b/" . $blockNo . "\">" . number_format( $blockNo ) . "</a></td>";
 	echo "<td>" . $confirms . "</td>";
 	echo "<td>$realUsername</td>";
 	echo "<td>".strftime("%B %d %Y %r",$resultrow->timestamp)."</td>";
-	echo "<td class=\"align_right\">" . $est . "</td>";
+	//echo "<td class=\"align_right\">" . $est . "</td>";
 	echo "<td class=\"align_right\">" . $users . "</td>";
 	echo "<td class=\"align_right\">" . $totals . "</td>";
 }
