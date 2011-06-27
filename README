@@ -1,0 +1,24 @@
+Simplecoin Web Mining Framework
+
+Requirements:
+Simplecoin relies on an existing and working bitcoin and pushpool installation. Before attempting to run simplecoin, please setup the following.
+Bitcoin: bitcoin.org
+Pushpool: http://forum.bitcoin.org/index.php?topic=8707.0
+
+
+Installation:
+1. Extract files into web root directory
+2. Create simplecoin database in you mysql instance
+3. Run simplecoin.sql in your simplecoin database (This will be used for pushpool & simplcoin)
+4. Edit includes/requiredFunctions.php and set the bitcoin & database login info
+5. Edit all files in the cronjob folder, set $includesDirectory to the correct server path.
+6. setup cronjobs on a staggered schedule. I recommend 10-30 minutes for most. I run payout twice daily.
+
+This project is the culmination of creation and contribution by the following Authors:
+Mike Allison (Simplecoin base): dj.mikeallison@gmail.com : 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
+Xenland (Miner Pool original fork): 12QY5HYbiT5Nx6fek8ss5pAywPsV3kqdu3
+Wayno (Ozco.in contributions): 1Gzcbs8dDYzf16qFWKHc5kWKuH8nji3pVt
+Tom Lightspeed : tomlightspeed@gmail.com : 16p56JHwLna29dFhTRcTAurj4Zc2eScxTD
+Please remember to include credit from previous authors in all forks and derivative works.
+
+Thanks!
