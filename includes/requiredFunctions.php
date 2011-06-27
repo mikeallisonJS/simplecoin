@@ -78,7 +78,12 @@ class checkLogin
 		$validCookie = false;
 		
 		//Get "secret" from MySql database
-		$getSecretQ	= mysql_query("SELECT secret, pass, sessionTimeoutStamp FROM webUsers WHERE id = ".mysql_real_escape_string($cookieInfo[0])." LIMIT 0,1");
+		$tempId = mysql_real_escape_string($cookieInfo[0]);
+		if (!is_numeric($tempId)) {
+			$tempId = 0;	
+			return false;
+		}
+		$getSecretQ	= mysql_query("SELECT secret, pass, sessionTimeoutStamp FROM webUsers WHERE id = $tempId LIMIT 0,1");
 		if ($getSecret = mysql_fetch_object($getSecretQ)) {
 			$password	= $getSecret->pass;
 			$secret	= $getSecret->secret;
