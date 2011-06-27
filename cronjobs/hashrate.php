@@ -69,5 +69,7 @@ while ($resultrow = mysql_fetch_object($result)) {
 	mysql_query("UPDATE webUsers SET hashrate = $resultrow->hashrate WHERE id = $resultrow->id");
 }
 
+$currentTime = time();
+mysql_query("update settings set value='$currentTime' where setting='statstime'");
 	
 ?>

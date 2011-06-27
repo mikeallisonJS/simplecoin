@@ -162,6 +162,22 @@ CREATE TABLE `shares_history` (
 
 
 --
+-- Table structure for table `userHashrates`
+--
+
+CREATE TABLE IF NOT EXISTS `userHashrates` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `userId` int(255) NOT NULL,
+  `hashrate` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `timestamp` (`timestamp`),
+  KEY `userHashrates_id1` (`userId`),
+  KEY `userId_timestamp` (`userId`,`timestamp`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=602993 ;
+
+
+--
 -- Table structure for table `webUsers`
 --
 

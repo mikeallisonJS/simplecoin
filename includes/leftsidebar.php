@@ -23,15 +23,15 @@ THE SOFTWARE.
 Note From Author: Please donate at the following address: 1Fc2ScswXAHPUgj3qzmbRmwWJSLL2yv8Q
 */
 
-	if(!$cookieValid){
-		//No valid cookie show login//
+if(!$cookieValid){
+//No valid cookie show login//
 ?>
 <!--Login Input Field-->
 <div id="leftsidebar">
 	<form action="/login.php" method="post" id="loginForm">
 		Login:<br>
-		<input type="text" name="username" value="username" id="userForm" onMouseDown="clearUsername();">
-		<input type="password" name="password" value="password" id="passForm" onMouseDown="clearPassword();">
+		<input type="text" name="username" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'Username':this.value;" value="username" />
+		<input type="password" name="password" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'password':this.value;" value="password" />
 		<input type="submit" value="LOGIN">
 	</form><br/>
 	<form action="/login.php" method="post" login="lostForm" id="lostPassForm">
@@ -39,26 +39,34 @@ Note From Author: Please donate at the following address: 1Fc2ScswXAHPUgj3qzmbRm
 	</form>
 </div>
 <?php
-	}else 	if($cookieValid){
-		//Valid cookie YES! Show this user stats//
+}else 	if($cookieValid){
+//Valid cookie YES! Show this user stats//
 ?>
 <div id="leftsidebar">
 	<span>
 		<?php
-			echo "Welcome Back, <i><b>".$userInfo->username."</b></i><br/><hr size='1' width='100%' /><br/>";
-			echo "Current Hashrate: <i><b>".$currentUserHashrate." MH/s</b></i><br/>";
-			echo "Past Shares: <i><b>".$lifetimeUserShares."</b></i><br/>";
-			echo "Past Invalid: <i><b>".$lifetimeUserInvalidShares."</b></i><br/>";
-			echo "Valid This Round: <b><i>".$totalUserShares."</i> shares</b><br/>";
-			echo "Round Shares: <b><i>".$totalOverallShares."</i> shares</b><br/>";
-			echo "Est. Earnings: <b><i>".$userRoundEstimate."</i> BTC</b>";
-			echo "<hr size='1' width='225'>";
-			echo "Current Balance: <b><i>".$currentBalance." </i>BTC</b><br/>";
-		?>		
-		<i>(Updated every 10 minutes)</i><br/>
-		<a href="logout.php" style="color: blue">Logout</a>
+		echo "Welcome Back, <i><b>".$userInfo->username."</b></i><br/><hr size='1' width='100%' /><br/>";
+		echo "Current Hashrate: <i><b>".$currentUserHashrate." MH/s</b></i><br/>";
+		echo "Past Shares: <i><b>".$lifetimeUserShares."</b></i><br/>";
+		echo "Past Invalid: <i><b>".$lifetimeUserInvalidShares."</b></i><br/>";
+		echo "Valid This Round: <b><i>".$totalUserShares."</i> shares</b><br/>";
+		echo "Round Shares: <b><i>".$totalOverallShares."</i> shares</b><br/>";
+		echo "Est. Earnings: <b><i>".sprintf("%.8f", $userRoundEstimate)."</i> BTC</b><br/><br/>";
+		echo "<hr size='1' width='225'>";
+		echo "Current Balance: <b><i>".$currentBalance." </i>BTC</b>";
+		echo "<hr size='1' width='225'><br/>";
+		echo "Last Updated: ";
+		echo "".date("H:i:s", $settings->getsetting('statstime'))." WST+8";
+		?>
+		<br />
+		<a class="fancy_button top_spacing" href="my_stats.php">
+		  <span style="background-color: #070;">Stats</span>
+		</a>
+		<a class="fancy_button top_spacing" href="logout.php">
+		  <span style="background-color: #070;">Logout</span>
+		</a>
 	</span>
 </div>
 <?php
-	}
+}
 ?>

@@ -28,7 +28,7 @@ include($includeDirectory."requiredFunctions.php");
 	
 /////////Pay users who have reached their threshold payout
 $bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
-$resultQ = mysql_query("SELECT userId, balance, IFNULL(paid, 0) as paid, IFNULL(sendAddress,'') as sendAddress FROM accountBalance WHERE threshold >= 1 AND balance > threshold");
+$resultQ = mysql_query("SELECT userId, balance, IFNULL(paid, 0) as paid, IFNULL(sendAddress,'') as sendAddress FROM accountBalance WHERE threshold >= 1 AND balance >= threshold");
 while ($resultR = mysql_fetch_object($resultQ)) {
 	$currentBalance = $resultR->balance;
 	$paid = $resultR->paid;
@@ -36,12 +36,12 @@ while ($resultR = mysql_fetch_object($resultQ)) {
 	$userId = $resultR->userId;
 	if ($paymentAddress != '')
 	{
-		$isValidAddress = $bitcoinControll->validateaddress($paymentAddress);
+		$isValidAddress = $bitcoinController->validateaddress($paymentAddress);
 		if($isValidAddress){
 			//Subtract TX feee
 			$currentBalance = $currentBalance - 0.01;
 			//Send money//
-			if($bitcoinControll->sendtoaddress($paymentAddress, $currentBalance)) {				
+			if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {				
 				//Reduce balance amount to zero
 				mysql_query("UPDATE accountBalance SET balance = '0', paid = '$paid' WHERE userId = $userId");
 			}

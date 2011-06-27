@@ -25,9 +25,9 @@ if(isSet($_COOKIE[$cookieName])){
 	$ip = $_SERVER['REMOTE_ADDR']; //Get Ip address for cookie validation
 	$validateCookie	= new checkLogin();
 	$cookieValid = $validateCookie->checkCookie(mysql_real_escape_string($_COOKIE[$cookieName]), $ip);
-	$userId	= $validateCookie->returnUserId($_COOKIE[$cookieName]);		
+	$userId	= $validateCookie->returnUserId($_COOKIE[$cookieName]);	
 	
-	//ensure userId is integer to prevent sql injection attack
+	//ensure userId is numeric to prevent sql injection attack
 	if (!is_numeric($userId)) {
 		$userId = 0;	
 		exit;
@@ -35,7 +35,7 @@ if(isSet($_COOKIE[$cookieName])){
 		
 	//Get user information
 	$userInfoQ = mysql_query("SELECT id, username, pin, pass, admin, share_count, stale_share_count, shares_this_round, hashrate, api_key, IFNULL(donate_percent, '0') as donate_percent, IFNULL(round_estimate, '0') as round_estimate FROM webUsers WHERE id = '$userId' LIMIT 0,1"); //
-	$userInfo = mysql_fetch_object($userInfoQ);
+	if ($userInfo = mysql_fetch_object($userInfoQ)) {
 	$authPin = $userInfo->pin;
 	$hashedPass = $userInfo->pass;
 	$isAdmin = $userInfo->admin;
@@ -75,6 +75,7 @@ if(isSet($_COOKIE[$cookieName])){
 		$currentBalance = 0;
 		$paymentAddress = "";
 		$payoutThreshold = 0;
+	}
 	}
 }
 ?>

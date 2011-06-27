@@ -19,7 +19,7 @@
 //Include site functions
 include("includes/requiredFunctions.php");
 
-setcookie($cookieName, false);
+setcookie($cookieName, 0, $timeoutStamp, $cookiePath, $cookieDomain);
 ?>
 <html>
   <head>
@@ -30,7 +30,7 @@ setcookie($cookieName, false);
   <body>
 	<div id="pagecontent">
 		<h1>You have been logged out<br/>
-		<a href="/" style="color: blue">Click here if you continue to see this message</a></h1>
+		<a href="/">Click here if you continue to see this message</a></h1>
 	</div>
   </body>
 </html>

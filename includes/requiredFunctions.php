@@ -75,21 +75,23 @@ class checkLogin
 		//Split cookie into 2 mmmmm!
 		$cookieInfo = explode("-", $input);
 		
+		$validCookie = false;
+		
 		//Get "secret" from MySql database
 		$getSecretQ	= mysql_query("SELECT secret, pass, sessionTimeoutStamp FROM webUsers WHERE id = ".mysql_real_escape_string($cookieInfo[0])." LIMIT 0,1");
-		$getSecret	= mysql_fetch_object($getSecretQ);
-		$password	= $getSecret->pass;
-		$secret	= $getSecret->secret;
-		$timeoutStamp	= $getSecret->sessionTimeoutStamp;
+		if ($getSecret = mysql_fetch_object($getSecretQ)) {
+			$password	= $getSecret->pass;
+			$secret	= $getSecret->secret;
+			$timeoutStamp	= $getSecret->sessionTimeoutStamp;
 			
-		//Create a variable to test the cookie hash against
-		$hashTest = hash("sha256", $secret.$password.$ipaddress.$timeoutStamp.$salt);
+			//Create a variable to test the cookie hash against
+			$hashTest = hash("sha256", $secret.$password.$ipaddress.$timeoutStamp.$salt);
 			
-		//Test if $hashTest = $cookieInfo[1] hash value; return results
-		$validCookie = false;			
-		if($hashTest == $cookieInfo[1]){		
-			$validCookie = true;
-		}				
+			//Test if $hashTest = $cookieInfo[1] hash value; return results
+			if($hashTest == $cookieInfo[1]){		
+				$validCookie = true;
+			}				
+		}
 		return $validCookie;
 	}
 	

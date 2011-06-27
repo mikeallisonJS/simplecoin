@@ -50,7 +50,12 @@ $returnError = "";
 $goodMessage = "";
 if (isset($_POST["act"])) {
 	$act = $_POST["act"];
-	$inputAuthPin = hash("sha256", $_POST["authPin"].$salt);
+
+	if (isset($_POST["authPin"])) {
+		$inputAuthPin = hash("sha256", $_POST["authPin"].$salt);
+	} else {
+		$inputAuthPin = NULL;
+	}
 		
 
 	//Check if authorization pin has been inputted correctly
@@ -149,7 +154,7 @@ if (isset($_POST["act"])) {
 		}
 
 
-	}else if($inputAuthPin != $authPin && $act){
+	} else if ($inputAuthPin != $authPin && $act) {
 		$returnError = "Authorization Pin is Invalid!";
 	}
 	
@@ -160,11 +165,11 @@ if (isset($_POST["act"])) {
 		$inputPass = mysql_real_escape_string($_POST["pass"]);
 
 		//Check if username already exists
-		$usernameExistsQ = mysql_query("SELECT `id` FROM `pool_worker` WHERE `associatedUserId` = ".$userId." AND `username` = '".$inputUser."'");
+		$usernameExistsQ = mysql_query("SELECT id FROM pool_worker WHERE associatedUserId = $userId AND username = '$inputUser'");
 		$usernameExists = mysql_num_rows($usernameExistsQ);
 
 		if($usernameExists == 0){
-			$addWorkerQ = mysql_query("INSERT INTO `pool_worker` (`associatedUserId`, `username`, `password`) VALUES('".$userId."', '".$inputUser."', '".$inputPass."')");
+			$addWorkerQ = mysql_query("INSERT INTO pool_worker (associatedUserId, username, password) VALUES('$userId', '$inputUser', '$inputPass')");
 			if($addWorkerQ){
 				$goodMessage = "Worker successfully added!";
 			}else if(!$addWorkerQ){
@@ -174,6 +179,30 @@ if (isset($_POST["act"])) {
 			$returnError = "Try using a different Worker Username";
 		}
 	}
+
+
+	if($act == "Update Worker"){
+
+		//Mysql Injection Protection
+		$workerId = mysql_real_escape_string($_POST["workerId"]);
+		$workernum = mysql_real_escape_string($_POST["workernum"]);
+		$password = mysql_real_escape_string($_POST["password"]);
+
+		$prefixUsername = $userInfo->username;
+		$inputUser = $prefixUsername.".".mysql_real_escape_string($_POST["workernum"]);
+			//update worker
+			mysql_query("UPDATE pool_worker SET username = '$inputUser', password = '$password' WHERE id = '$workerId' AND associatedUserId = '$userId'");
+		}
+
+
+		if($act == "Delete Worker"){
+
+			//Mysql Injection Protection
+			$workerId = mysql_real_escape_string($_POST["workerId"]);
+
+			//Delete worker OH NOES!
+			mysql_query("DELETE FROM pool_worker WHERE id = '$workerId' AND associatedUserId = '$userId'");
+		}
 }
 
 //Display Error and Good Messages(If Any)
@@ -222,34 +251,34 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <br />
 
 <h2>Workers</h2>
-<form action="/accountdetails.php" method="post">
 <table border="1" cellpadding="1" cellspacing="1">
-<tr><td><u>Worker Name </u></td><td><u>Worker Password</u></td><td><u>Active</u></td><td><u>Hashrate (Mhash/s)</u></td></tr>
+<tr><td><u>Worker Name </u></td><td><u>Worker Password</u></td><td><u>Active</u></td><td><u>Hashrate (Mhash/s)</u></td><td><u>Update</u></td><td><u>Delete</u></td></tr>
 <?php	
 //Get list of workers from the associatedUserId
 $getWorkers = mysql_query("SELECT `id`, `username`, `password`, active, hashrate FROM `pool_worker` WHERE `associatedUserId` = '".$userId."'");
 while($worker = mysql_fetch_array($getWorkers)){
+?>
+<form action="/accountdetails.php" method="post">
+<input type="hidden" name="workerId" value="<?=$worker["id"]?>">
+<?
 	//Display worker information and the forms to edit or update them
 	$splitUsername = explode(".", $worker["username"]);
 	$realUsername = $splitUsername[1];
-	?>	
-	<?php 
-    //<form action="/accountdetails.php" method="post"><?php echo $userInfo->username;/>.<input
-	//type="text" name="user" size="10" maxlength="20"
-	//value="<?php echo $realUsername/>"> &middot; Pass: <input type="text"
-	//name="pass" size="10" maxlength="20"
-	//value="<?php echo $worker["password"]/>"> <input type="submit"
-	//value="Update"></form>
 	?>
-	<tr><td <?php if ($worker["active"] == 0) { ?>style="color: red"<?php } ?>><?php echo antiXss($userInfo->username); ?>.<?php echo antiXss($realUsername); ?></td>
-	    <td><?php echo antiXss($worker["password"]);?></td>
+	<tr>
+
+		<td <?php if ($worker["active"] == 0) { ?>style="color: red"<?php } ?>><?php echo antiXss($userInfo->username); ?>.<input type="text" name="workernum" value="<?php echo antiXss($realUsername); ?>" size="10"></td>
+	    <td><input type="text" name="password" value="<?php echo antiXss($worker["password"]);?>" size="10"></td>
 	    <td><?php if ($worker["active"] == 1) echo "Y"; else echo "N"; ?>
-	    <td><?php echo antiXss($worker["hashrate"])?></td></tr></tr>
+	    <td><?php echo antiXss($worker["hashrate"])?></td>
+		<td><input type="submit" name="act" value="Update Worker"></td>
+		<td><input type="submit" name="act" value="Delete Worker"/></td>
+	</tr>
+</form>
 	<?php
 }
 ?>
 </table>
-</form>
 <form action="/accountdetails.php" method="post"><input type="hidden"
 	name="act" value="addWorker"><!--  AuthPin:<input type="password"
 	name="authPin" size="4" maxlength="4"><br /> -->

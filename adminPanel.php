@@ -18,7 +18,9 @@
 
 $pageTitle = "- Admin Panel";
 include ("includes/header.php");
-	
+
+$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
+
 $goodMessage = "";
 $returnError = "";
 //Scince this is the Admin panel we'll make sure the user is logged in and "isAdmin" enabled boolean; If this is not a logged in user that is enabled as admin, redirect to a 404 error page
@@ -28,12 +30,16 @@ if(!$cookieValid || $isAdmin != 1) {
 	exit;
 }
 
-if (isset($_POST["act"]))
+if (isset($_POST["act"]) && isset($_POST["authPin"]))
 {
-	$act = mysql_real_escape_string($_POST["act"]);
-	$inputAuthPin = hash("sha256", $_POST["authPin"].$salt);
+	if (isset($_POST["authPin"])) {
+		$inputAuthPin = hash("sha256", $_POST["authPin"].$salt);
+	} else {
+		$inputAuthPin = NULL;
+	}
+
 	//Make sure an authPin is set and valid when $act is active
-	if($act && $authPin == $inputAuthPin){
+	if($_POST["act"] && $_$authPin == $inputAuthPin){
 		//Update information if needed
 		if($act == "UpdateMainPageSettings"){
 			try {		
@@ -63,7 +69,7 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 <div id="AdminContainer">
 	<h1 style="text-decoration:underline;">Welcome back admin</h1><br/>
 	<h3>General Settings</h3>
-	<hr size="1" width="80%">
+	<hr size="1" width="80%"></hr>
 	<!--Begin main page edits-->
 	<form action="/adminPanel.php" method="post">
 		<input type="hidden" name="act" value="UpdateMainPageSettings">
@@ -71,7 +77,7 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 		Header Title <input type="text" name="headerTitle" value="<?php echo antiXss($settings->getsetting("websitename"));?>"><br/>
 		Header Slogan <input type="text" name="headerSlogan" value="<?php echo antiXss($settings->getsetting("slogan"));?>"><br/>
 		Percentage Fee <input type="text" name="percentageFee" size="10" maxlength="10" value="<?php echo antiXss($settings->getsetting("sitepercent")); ?>">%<br/>
-		Fee Address <input type="text" name="paymentAddress" value="<?php echo antiXss($settings->getsetting("sitepayoutaddress")); ?>"><br/>
+		Fee Address <input type="text" name="paymentAddress" size="60" value="<?php echo antiXss($settings->getsetting("sitepayoutaddress"));?>"><br/>
 		Default Reward Type <select name="rewardType">
 		<option value="0" <?php if ($settings->getsetting("siterewardtype") == 0) echo "selected"; ?>>Cheat Proof Score</option>
 		<option value="1" <?php if ($settings->getsetting("siterewardtype") == 1) echo "selected"; ?>>Proportional</option>
@@ -81,13 +87,31 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 		<input type="submit" value="Update Main Page Settings">
 	</form>
 	<br/><br/>
-	<h3>User Control</h3>
-	<form action="/adminPanel.php" method="post">
-		<input type="hidden" name="act" value="userControl">
-		Search user by username or id#<br/>
-		<input type="text" name="userSearch" value="UserName">
-	</form>
+	<h3>Info</h3>
+	<hr size="1" width="80%"></hr>
+
+	<? 
+
+	$sitewallet = mysql_query("SELECT sum(balance) FROM `accountBalance` WHERE `balance` > 0")or sqlerr(__FILE__, __LINE__);
+	$sitewalletq = mysql_fetch_row($sitewallet);
+	$usersbalance = $sitewalletq[0];
+	$balance = $bitcoinController->query("getbalance");
+	$total = $balance - $usersbalance;
+
+	echo "Block Number: ".$bitcoinController->getblocknumber()."<br>";
+	echo "Difficulty: ".$bitcoinController->query("getdifficulty")."<br>";
+	echo "Wallet Balance: ".$balance."<br>";
+	echo "UnPaid: ".$usersbalance."<br>";
+	echo "Total Left: <font color=red>$total</font><br>";
+	
+?>
+	<br><h3>News Control</h3>
+	<hr size="1" width="80%"></hr>
+	<a href=news.php style="color: blue">Edit News</a>
+	<br/><br/>
+	<h3>Users Control</h3>
+	<hr size="1" width="80%"></hr>
+	<a href=users.php style="color: blue">Show USers</a>
 </div>
 
-<?php include ("includes/footer.php"); ?>
-
+<?include ("includes/footer.php");?>

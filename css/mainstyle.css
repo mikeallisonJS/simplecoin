@@ -20,27 +20,32 @@ Website Reference:http://www.gnu.org/licenses/gpl-2.0.html
 *{
 	margin:0;
 	padding:0;
-	
 }
 
 body{
 	background-color:#FFF;
-	/*)background-image:url(/images/background.jpg);
-	background-position:25em 0;*/
 	color:#000;
 	font-family: Arial;
+}
+
+a:link, a.visited {
+	color: #0000FF;
+}
+
+a:hover {
+	color: #FF0000;
+}
+a:active {
+	color: #00FF00;
 }
 
 input{
 	border: 1px solid #000;
 }
 
-a:active,a:link,a:visited{
-	color:#FFF;
-}
-a:hover{
-	color:#9FB6CD;
-	font-weight:bold;
+.hide
+{
+	display:none;
 }
 
 /*-----End of Defaults------*/
@@ -87,41 +92,34 @@ a.menu:hover{
 
 #userInfo{
 	float: left;
-	background-color:#DDD;	
+	background-color:#DDD;
 	width:15em;
 	height: 100%;
 	padding:.5em;
-	/*margin-left:1em;
 }
 
 #bodyContent{
-	/*width:100%;*/
 	height:100%;
-	background-color:#FFF;		
+	background-color:#FFF;
 }
 
 #blogContainer{
-		
 		margin-left:1em;
 		padding-top:1em;
 		padding-left:1em;
 }
-#footer{		
+#footer{
 		text-align:center;
 		clear: both;
-	    /*position:absolute;
-   		bottom:0;
-   		width:100%;
-   		height:26px;
-   		background:#144e56;;*/   		
 }
 
 /*-----Menu Buttons------*/
-#menuBar{	
+#menuBar{
 	background-color:#000;
 	width: 100%;
 	height:2em;
 }
+
 div.menuBtn{
 	float:left;
 	margin-left:1em;
@@ -159,13 +157,12 @@ span.returnMessage{
 	font-size:1.5em;
 }
 
-#leftsidebar {		
+#leftsidebar {
 	float: left;
 	background-color:#DDD;
 	width: 15em;	
 	padding:.5em;
 	overflow: none;
-	
 }
 
 #content {
@@ -173,8 +170,297 @@ span.returnMessage{
 	padding: 1em;
 	margin: .5em;
 	margin-left: 16em;	
-	background-color: #FFF;
-	
+	background-color: #FFF;	
 }
 
+#currentRates {
+	vertical-align: middle;
+	padding-right: 1em;
+}
 
+#stats_wrap {
+	width: 1024px;
+	padding:0px;
+	margin:0px;
+}
+
+#stats_wrap_2
+{
+	width: 1024px;
+	padding: 0px;
+	margin-top: 10px;
+	margin-bottom:10px;
+}
+
+.onion
+{
+	width:18px;
+	height:18px;
+}
+
+#new_user_message{
+	width: 1024px;
+}
+
+#new_user_message p
+{
+	margin: 10px;
+	margin-left:0px;
+	padding: 0px;
+}
+
+#stats_members {
+	float:left;
+}
+
+#stats_lifetime {
+	padding-left:10px;
+	float:left;
+}
+
+#stats_onions {
+	float:left;
+}
+
+#stats_server {
+	padding-left:10px;
+	float:left;
+}
+
+.green{
+	color: #347235 !important;
+}
+
+.red{
+	color: #7E2217 !important;
+}
+
+.orange{
+	color: #F88017 !important;
+}
+
+.earned_coin
+{
+	height: 40px;
+	width: 40px;
+}
+
+.money_table
+{
+  background-color: #FFCF4B !important;
+  border: 1px solid #DD9222 !important;
+}
+
+.moneyheader
+{
+  color: #DD9222 !important;
+  background-color: #FFCF4B;
+  border-right: 2px solid #DD9222 !important;
+  border-bottom: 2px solid #DD9222;
+}
+
+.bitcoin_image
+{
+  width: 1%;
+  border-bottom: 2px solid #DD9222 !important;
+  border-right:0px !important;
+}
+
+.bitcoins
+{
+  border-left:0px;
+  border-bottom: 2px solid #DD9222 !important;
+  border-right: 2px solid #DD9222 !important;
+  font-size: 22px !important;
+}
+
+.money_table th, .money_table td
+{
+  background-color: #FFCF4B !important;
+  color: #632a2a !important;
+}
+
+.money_table th[scope=col]
+{
+  border-bottom: 2px solid #DD9222 !important;
+  border-right: 2px solid #DD9222 !important;
+}
+
+.money_table th, .money_table td
+{
+  padding: 5px;
+  text-align: left;
+}
+
+.stats_table, .money_table
+{
+  padding: 0;
+  margin: 0;
+  border-collapse: collapse;
+  border: 1px solid #333;
+  font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+  font-size: 0.9em;
+  color: #000;
+  background: #bcd0e4;
+}
+
+.stats_table caption, .money_table caption
+{
+  caption-side: bottom;
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: right;
+  padding: 0.5em 0;
+}
+
+.stats_table th, .stats_table td
+{
+  border: 1px dotted #666;
+  padding: 0.5em;
+  text-align: left;
+  color: #632a39;
+}
+
+.stats_table th[scope=col], .money_table th[scope=col]
+{
+  color: #000;
+  background-color: #8fadcc;
+  font-size: 0.9em;
+  border-bottom: 2px solid #333;
+  border-right: 2px solid #333;
+}
+
+.stats_table th+th[scope=col]
+{
+  color: #fff;
+  background-color: #7d98b3;
+  border-right: 1px dotted #666;
+}
+
+.leftheader
+{
+  color: #fff !important;
+  background-color: #7d98b3;
+  border-right: 2px solid #333 !important;
+  border-bottom: 2px solid #333;
+}
+
+.stats_table th[scope=row], .money_table th[scope=row]
+{
+  background-color: #b8cfe5;
+  border-right: 2px solid #333;
+}
+
+.stats_table tr.alt th, .stats_table tr.alt td, .money_table tr.alt th, .money_table tr.alt td
+{
+  color: #2a4763;
+}
+
+.stats_table .user_position th[scope=row], .stats_table .user_position td
+{
+  background-color: #632a2a;
+  color: #fff;
+}
+
+.member_width
+{
+  width: 275px;
+}
+
+.server_width
+{
+  width: 400px;
+}
+
+.blocks_width
+{
+	width:800px;
+}
+
+.top_spacing
+{
+  margin-top: 10px;
+}
+
+.bottom_spacing
+{
+  margin-bottom: 10px;
+}
+
+.left_spacing
+{
+  margin-left: 10px;
+}
+
+.align_right
+{
+  text-align: right !important;
+}
+
+.clear {
+	clear:both;
+}
+
+a.fancy_button, button.fancy_button {
+  background: #555;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0.4)), to(rgba(77,77,77,0.4)));
+  background: -moz-linear-gradient(top, rgba(0,0,0,0.4), rgba(77,77,77,0.4));
+  float: left;
+  padding: 4px;
+  text-decoration: none;
+  outline: 0;
+  border-width: 1px;
+  border-style: solid;
+  width: auto;
+  overflow: visible;
+  border-color: transparent transparent #666 transparent;
+  border-color: transparent transparent rgba(202,202,202,0.27) transparent;
+  -webkit-border-radius: 12px; -moz-border-radius: 12px; border-radius: 12px;
+  -webkit-background-clip: padding-box;
+}
+
+a.fancy_button span, button.fancy_button span {
+  display: block;
+  float: left;
+  letter-spacing: -1px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #ccc #444 #111 #444;
+  border-color: rgba(255,255,255,0.7) rgba(0,0,0,0.5) rgba(0,0,0,0.7) rgba(0,0,0,0.5);
+  font: bold 16px/0.8em Arial;
+  color: white;
+  padding: 0.48em 2em;
+  cursor: pointer;
+  text-shadow: rgba(0,0,0,0.45) 0 -1px 0;
+  -webkit-box-shadow: rgba(0,0,0,0.75) 0px 0px 3px; -moz-box-shadow: rgba(0,0,0,0.75) 0px 0px 3px; box-shadow: rgba(0,0,0,0.75) 0px 0px 3px;
+  -webkit-border-radius: 7px; -moz-border-radius: 7px; border-radius: 7px;
+  background: transparent -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,0.6)), color-stop(0.5, rgba(255,255,255,0.15)), color-stop(0.5, rgba(255,255,255,0.01)), to(transparent));
+  background: transparent -moz-linear-gradient(top, rgba(255,255,255,0.6), rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.01) 50%, transparent);
+  filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorstr='#80FFFFFF', EndColorstr='#00FFFFFF');
+  -webkit-background-clip: padding-box;
+}
+
+a.fancy_button:hover span, button.fancy_button:hover span {
+  border-top-color: rgba(255,255,255,0.65);
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(220,220,220,0.6)), color-stop(0.5, rgba(100,100,100,0.2)), color-stop(0.5, rgba(0,0,0,0.21)), to(rgba(0, 0, 0, 0.20)));
+  background: -moz-linear-gradient(top, rgba(220,220,220,0.6), rgba(100,100,100,0.2) 50%, rgba(0,0,0,0.21) 50%, rgba(0, 0, 0, 0.20));
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, StartColorStr='#99dcdcdc', EndColorStr='#33000000');
+  -webkit-background-clip: padding-box;
+}
+
+a.fancy_button:active span, button.fancy_button:active span {
+  border-top-color: rgba(255,255,255,0.2);
+  border-left-color: rgba(0,0,0,0.4);
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(150,150,150,0.6)), color-stop(0.5, rgba(60,60,60,0.6)), color-stop(0.5, rgba(40,40,40,0.6)), to(rgba(20, 20, 20, 0.5)));
+  background: -moz-linear-gradient(top, rgba(150,150,150,0.6), rgba(60,60,60,0.6) 50%, rgba(40,40,40,0.6) 50%, rgba(20, 20, 20, 0.5));
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, StartColorStr='#80969696', EndColorStr='#59000000');
+  -webkit-box-shadow: inset 0 0 18px rgba(0,0,0,0.75), rgba(0,0,0,0.75) 0px 0px 3px; -moz-box-shadow: inset 0 0 18px rgba(0,0,0,0.75), rgba(0,0,0,0.75) 0px 0px 3px; box-shadow: inset 0 0 18px rgba(0,0,0,0.75), rgba(0,0,0,0.75) 0px 0px 3px;
+  -webkit-background-clip: padding-box;
+}
+
+a.fancy_button span:active, button.fancy_button span:active {
+  border-top-color: rgba(255,255,255,0.2);
+  border-left-color: rgba(0,0,0,0.4);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, StartColorStr='#80969696', EndColorStr='#59000000');
+  -webkit-background-clip: padding-box;
+}

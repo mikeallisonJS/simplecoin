@@ -15,7 +15,9 @@
 	<div class="menuBtn">
 		<a href="/accountdetails.php" class="menu">Account Details</a>
 	</div>
-
+	<div class="menuBtn">
+		<a href="/my_stats.php" class="menu">My Stats</a>
+	</div>
 	<?php
 	//If this user is an admin show the adminPanel.php link
 	if($isAdmin){
@@ -23,12 +25,12 @@
 	<div class="menuBtn">
 		<a href="/adminPanel.php" class="menu">(Admin Panel)</a>
 	</div>
-	<?php	
+	<?php
 		}
 	}
 	?>
 	<div class="menuBtn">
-		<a href="/stats.php" class="menu">Stats</a>
+		<a href="/stats.php" class="menu">Pool Stats</a>
 	</div>
 
 	<div class="menuBtn">
@@ -39,5 +41,5 @@
 	</div>
 	<div class="menuBtn">
 		<a href="about.php" class="menu">About</a>
-	</div>	
-</div>	
+	</div>
+</div>
