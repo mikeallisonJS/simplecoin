@@ -34,7 +34,7 @@ include($includeDirectory.'mtgox.php');
 try {
 	$mtgox = new mtgox("", "");
 	$ticker = $mtgox->ticker();
-	if (intval($ticker['last']) > 0) $settings->setsetting('mtgoxlast', $ticker['last']);
+	if (intval($ticker['last']) > 0) $settings->setsetting('mtgoxlast', round($ticker['last'],2));
 } catch (Exception $e) { }
 
 //Open a bitcoind connection
