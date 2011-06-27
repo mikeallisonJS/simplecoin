@@ -67,6 +67,7 @@ $sql = "SELECT u.id, IFNULL(sum(p.hashrate),0) as hashrate ".
 $result = mysql_query($sql);
 while ($resultrow = mysql_fetch_object($result)) {
 	mysql_query("UPDATE webUsers SET hashrate = $resultrow->hashrate WHERE id = $resultrow->id");
+	mysql_query("INSERT INTO userHashrates (userId, hashrate) VALUES ($resultrow->id, $resultrow->hashrate)");
 }
 
 $currentTime = time();
