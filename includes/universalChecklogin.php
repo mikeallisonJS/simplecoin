@@ -34,7 +34,7 @@ if(isSet($_COOKIE[$cookieName])){
 	}
 		
 	//Get user information
-	$userInfoQ = mysql_query("SELECT id, username, pin, pass, admin, share_count, stale_share_count, shares_this_round, hashrate, api_key, IFNULL(donate_percent, '0') as donate_percent, IFNULL(round_estimate, '0') as round_estimate FROM webUsers WHERE id = '".$userId."' LIMIT 0,1"); //
+	$userInfoQ = mysql_query("SELECT id, username, pin, pass, admin, share_count, stale_share_count, shares_this_round, hashrate, api_key, IFNULL(donate_percent, '0') as donate_percent, IFNULL(round_estimate, '0') as round_estimate FROM webUsers WHERE id = '$userId' LIMIT 0,1"); //
 	$userInfo = mysql_fetch_object($userInfoQ);
 	$authPin = $userInfo->pin;
 	$hashedPass = $userInfo->pass;
@@ -65,7 +65,7 @@ if(isSet($_COOKIE[$cookieName])){
 				
 				
 	//Get Current balance				    
-	$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress, threshold FROM accountBalance WHERE userId = '".$userId."' LIMIT 0,1");
+	$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress, threshold FROM accountBalance WHERE userId = '$userId' LIMIT 0,1");
 	if ($currentBalanceObj = mysql_fetch_object($currentBalanceQ)) {
 		$currentBalance = $currentBalanceObj->balance;
 		//Get payment address that is associated wit this user

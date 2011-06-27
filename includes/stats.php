@@ -2,25 +2,25 @@
 
 class Stats { 	
 	function gettotalshares() {		
-		$sql = "select count(id) from shares";		
+		$sql = "SELECT count(id) FROM shares";		
 		$result = mysql_query($sql);
 		$row = mysql_fetch_array($result);
 		if ($row != NULL)return $row[0];	
 	}
 	
 	function currenthashrate() {		
-		$sql = "select (select count(id) from shares where time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ". 
-				"+ (select count(id) from shares_history where time > DATE_SUB(now(), INTERVAL 10 MINUTE)) from dual";		
+		$sql = "SELECT (select count(id) FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ". 
+				"+ (SELECT count(id) FROM shares_history WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE)) FROM dual";		
 		$result = mysql_query($sql);
 		$row = mysql_fetch_array($result);
 		if ($row != NULL)return intval($row[0]) * 8;	
 	}
 	
 	function currentworkers() {
-		$sql = "select count(a.username) from ( ".
-               "select distinct username from shares where time > DATE_SUB(now(), INTERVAL 60 MINUTE) ".
+		$sql = "SELECT count(a.username) FROM ( ".
+               "SELECT distinct username FROM shares WHERE time > DATE_SUB(now(), INTERVAL 60 MINUTE) ".
 			   "UNION ".
-			   "select distinct username from shares_history where time > DATE_SUB(now(), INTERVAL 60 MINUTE)) a";
+			   "SELECT distinct username FROM shares_history WHERE time > DATE_SUB(now(), INTERVAL 60 MINUTE)) a";
 		$result = mysql_query($sql);
 		$row = mysql_fetch_array($result);
 		if ($row != NULL)return intval($row[0]);

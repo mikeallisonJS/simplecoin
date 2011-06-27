@@ -40,14 +40,14 @@ $apikey = mysql_real_escape_string($_GET["api_key"]);
 
 $user = new User();
 
-$resultU = mysql_query("SELECT u.id, u.hashrate, b.balance, b.paid from webUsers u, accountBalance b WHERE u.id = b.userId AND u.api_key='".$apikey."'");
+$resultU = mysql_query("SELECT u.id, u.hashrate, b.balance, b.paid from webUsers u, accountBalance b WHERE u.id = b.userId AND u.api_key = '$apikey'");
 if ($userobj = mysql_fetch_object($resultU)){
 	$userid = $userobj->id;
 	$user->confirmed_rewards = $userobj->balance;
 	$user->hashrate = $userobj->hashrate;
 	$user->payout_history = $userobj->paid;
 }
-$resultW = mysql_query("SELECT username, hashrate, active FROM pool_worker WHERE associatedUserId=".$userid);
+$resultW = mysql_query("SELECT username, hashrate, active FROM pool_worker WHERE associatedUserId = $userid");
 while ($workerobj = mysql_fetch_object($resultW)) {
 	$worker = new Worker();
 	$worker->alive = $workerobj->active;
@@ -56,7 +56,5 @@ while ($workerobj = mysql_fetch_object($resultW)) {
 } 
 
 echo json_encode($user);
-//echo json_encode($workers);
-
 
 ?>

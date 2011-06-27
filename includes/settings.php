@@ -38,7 +38,7 @@ class Settings {
 	}
 	
 	function setsetting($settingname, $value) {		
-      	mysql_query("UPDATE settings SET value='".$value."' WHERE setting ='".$settingname."'");
+      	mysql_query("UPDATE settings SET value='$value' WHERE setting ='$settingname'");
 	}
 }
 
