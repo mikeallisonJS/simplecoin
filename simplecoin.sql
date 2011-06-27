@@ -95,7 +95,7 @@ CREATE TABLE `settings` (
 
 LOCK TABLES `settings` WRITE;
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
-INSERT INTO `settings` VALUES ('mtgoxlast','1'),('currenthashrate','1'),('currentworkers','0'),('sitebalance','0'),('currentroundshares','1'),('sitepercent','0.001'),('websitename','SIMPLECOIN.US'),('sitepayoutaddress',''),('slogan','Making Bitcoins Simple'),('pagetitle','SIMPLECOIN.US'),('siterewardtype','0');
+INSERT INTO `settings` VALUES ('mtgoxlast','1'),('currenthashrate','1'),('currentworkers','0'),('sitebalance','0'),('currentroundshares','1'),('sitepercent','0.001'),('websitename','SIMPLECOIN.US'),('sitepayoutaddress',''),('slogan','Making Bitcoins Simple'),('pagetitle','SIMPLECOIN.US'),('siterewardtype','0'),('statstime','0');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
