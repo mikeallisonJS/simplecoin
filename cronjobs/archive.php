@@ -18,8 +18,7 @@
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
   
 //Check that script is run locally
-$ip = $_SERVER['REMOTE_ADDR'];
-if ($ip != "127.0.0.1") {
+if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
 	echo "cronjobs can only be run locally.";
 	exit;
 }
@@ -51,7 +50,7 @@ while ($sharesR = mysql_fetch_object($sharesQ)) {
 		$shareInputSql .= ",";
 	}				
 	$i++;
-	$shareInputSql .= "(".$sharesR->blockNumber.",".$sharesR->associatedUserId.",".$sharesR->valid.",".$sharesR->invalid.")";
+	$shareInputSql .= "($sharesR->blockNumber,$sharesR->associatedUserId,$sharesR->valid,$sharesR->invalid)";
 	if ($i > 20)
 	{		
 		mysql_query($shareInputSql);
@@ -63,5 +62,5 @@ if (strlen($shareInputSql) > 0)
 	mysql_query($shareInputSql);
 
 //Remove counted shares from shares_history
-mysql_query("DELETE FROM shares_history WHERE counted = '1' AND id <=".$maxId);	
+mysql_query("DELETE FROM shares_history WHERE counted = '1' AND id <= $maxId");	
 ?>

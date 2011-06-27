@@ -16,6 +16,7 @@
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
+$pageTitle = "- Getting Started";
 include ("includes/header.php");
 	
 ?>

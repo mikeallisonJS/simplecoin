@@ -17,8 +17,7 @@
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
 //Check that script is run locally
-$ip = $_SERVER['REMOTE_ADDR'];
-if ($ip != "127.0.0.1") {
+if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
 	echo "cronjobs can only be run locally.";
 	exit;
 }
@@ -44,7 +43,7 @@ while ($resultR = mysql_fetch_object($resultQ)) {
 			//Send money//
 			if($bitcoinControll->sendtoaddress($paymentAddress, $currentBalance)) {				
 				//Reduce balance amount to zero
-				mysql_query("UPDATE `accountBalance` SET balance = '0', paid = '".$paid."' WHERE `userId` = '".$userId."'");
+				mysql_query("UPDATE accountBalance SET balance = '0', paid = '$paid' WHERE userId = $userId");
 			}
 		}
 	}

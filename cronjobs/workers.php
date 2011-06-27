@@ -17,8 +17,7 @@
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
 //Check that script is run locally
-$ip = $_SERVER['REMOTE_ADDR'];
-if ($ip != "127.0.0.1") {
+if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
 	echo "cronjobs can only be run locally.";
 	exit;
 }
@@ -60,7 +59,7 @@ try {
 	while ($resultObj = mysql_fetch_object($result)) {
 		if ($resultObj->active == 1)
 			$currentWorkers += 1;
-		mysql_query("UPDATE pool_worker p SET active=".$resultObj->active." WHERE username='".$resultObj->username."'");
+		mysql_query("UPDATE pool_worker p SET active = $resultObj->active WHERE username='$resultObj->username'");
 	}
 	$settings->setsetting('currentworkers', $currentWorkers);
 } catch (Exception $e) {}
@@ -92,5 +91,5 @@ try {
 	//Proportional estimate
 	$totalRoundShares = $settings->getsetting("currentroundshares");
 	if ($totalRoundShares < $difficulty) $totalRoundShares = $difficulty;
-	$userListQ = mysql_query("UPDATE webUsers SET round_estimate = (1-".$f.")*50*(shares_this_round/".$totalRoundShares.")*(1-(donate_percent/100))");
+	$userListQ = mysql_query("UPDATE webUsers SET round_estimate = (1-$f)*50*(shares_this_round/$totalRoundShares)*(1-(donate_percent/100))");
 //}

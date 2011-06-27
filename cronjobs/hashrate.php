@@ -17,8 +17,7 @@
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
 //Check that script is run locally
-$ip = $_SERVER['REMOTE_ADDR'];
-if ($ip != "127.0.0.1") {
+if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
 	echo "cronjobs can only be run locally.";
 	exit;
 }
@@ -29,45 +28,45 @@ include($includeDirectory."requiredFunctions.php");
 
 //Hashrate by worker
 $sql =  "SELECT IFNULL(sum(a.id),0) as id, p.username FROM pool_worker p LEFT JOIN ".
-			"((select count(id) as id, username ". 
-			"from shares ". 
-			"where time > DATE_SUB(now(), INTERVAL 10 MINUTE) ".
-			"group by username) ".
+			"((SELECT count(id) as id, username ". 
+			"FROM shares ". 
+			"WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ".
+			"GROUP BY username) ".
 		"UNION ". 
-			"(select count(id) as id, username ". 
-			"from shares_history ". 
-			"where time > DATE_SUB(now(), INTERVAL 10 MINUTE) ". 
-			"group by username)) a ".
+			"(SELECT count(id) as id, username ". 
+			"FROM shares_history ". 
+			"WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ". 
+			"GROUP BY username)) a ".
 		"ON p.username=a.username ".
-		"group by username";
+		"GROUP BY username";
 $result = mysql_query($sql);
 while ($resultrow = mysql_fetch_object($result)) {
 	$hashrate = $resultrow->id;
 	$hashrate = round((($hashrate*4294967296)/600)/1000000, 0);
-	mysql_query("update pool_worker set hashrate=".$hashrate." where username='".$resultrow->username."'");
+	mysql_query("UPDATE pool_worker SET hashrate = $hashrate WHERE username = '$resultrow->username'");
 }
 
 //Total Hashrate (more exact than adding)
 $sql =  "SELECT sum(a.id) as id FROM ".
-			"((select count(id) as id from shares where time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ".
+			"((SELECT count(id) as id FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ".
 		"UNION ". 
-			"(select count(id) as id from shares_history where time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ". 
+			"(SELECT count(id) as id FROM shares_history WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ". 
 			") a ";
 $result = mysql_query($sql);
 if ($resultrow = mysql_fetch_object($result)) {
 	$hashrate = $resultrow->id;
 	$hashrate = round((($hashrate*4294967296)/600)/1000000, 0);	
-	mysql_query("update settings set value='".$hashrate."' where setting='currenthashrate'");
+	mysql_query("UPDATE settings SET value = '$hashrate' WHERE setting='currenthashrate'");
 }
 
 //Hashrate by user
-$sql = "select u.id, IFNULL(sum(p.hashrate),0) as hashrate ".
+$sql = "SELECT u.id, IFNULL(sum(p.hashrate),0) as hashrate ".
 		"FROM webUsers u LEFT JOIN pool_worker p ". 
 		"ON p.associatedUserId = u.id ".
 		"GROUP BY id";
 $result = mysql_query($sql);
 while ($resultrow = mysql_fetch_object($result)) {
-	mysql_query("update webUsers set hashrate=".$resultrow->hashrate." where id=".$resultrow->id);
+	mysql_query("UPDATE webUsers SET hashrate = $resultrow->hashrate WHERE id = $resultrow->id");
 }
 
 	

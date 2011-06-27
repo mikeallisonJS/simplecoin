@@ -16,6 +16,7 @@
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
+$pageTitle = "- Account Details";
 include ("includes/header.php");
 
 /*
