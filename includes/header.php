@@ -70,6 +70,7 @@ else $pageTitle = outputPageTitle(). " ". $pageTitle;
 						<tr><td style="color: #FFF; text-align: right"><a href="http://www.mtgox.com" target="_blank" style="color: #FFF">MtGox (USD):</a></td><td style="color: #FFF">$<?php print $settings->getsetting('mtgoxlast'); ?></td></tr>
 						<tr><td style="color: #FFF; text-align: right">Current Hashrate:</td><td style="color: #FFF"><?php print round($settings->getsetting('currenthashrate')/1000,1); ?> GH/s</td></tr>
 						<tr><td style="color: #FFF; text-align: right">Current Workers:</td><td style="color: #FFF"><?php print $settings->getsetting('currentworkers'); ?></td></tr>
+						<tr><td style="color: #FFF; text-align: right">Server Load:</td><td style="color: #FFF"><?php print $stats->get_server_load(); ?></td></tr>
 						</table>
 					</td>
 				</tr>

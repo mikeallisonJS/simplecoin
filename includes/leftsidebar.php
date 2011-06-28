@@ -46,12 +46,12 @@ if(!$cookieValid){
 	<span>
 		<?php
 		echo "Welcome Back, <i><b>".$userInfo->username."</b></i><br/><hr size='1' width='100%' /><br/>";
-		echo "Current Hashrate: <i><b>".$currentUserHashrate." MH/s</b></i><br/>";
-		echo "Past Shares: <i><b>".$lifetimeUserShares."</b></i><br/>";
-		echo "Past Invalid: <i><b>".$lifetimeUserInvalidShares."</b></i><br/>";
-		echo "Valid This Round: <b><i>".$totalUserShares."</i> shares</b><br/>";
-		echo "Round Shares: <b><i>".$totalOverallShares."</i> shares</b><br/>";
-		echo "Est. Earnings: <b><i>".sprintf("%.8f", $userRoundEstimate)."</i> BTC</b><br/><br/>";
+		echo "<table><tr><td>Hashrate: </td><td><b><i><nobr>".$currentUserHashrate." MH/s</nobr></b></i></td></tr>";
+		echo "<tr><td><nobr>Past Shares: </nobr></td><td><b><i>".$lifetimeUserShares."</b></i></td></tr>";
+		echo "<tr><td><nobr>Past Invalid: </nobr></td><td><b><i>".$lifetimeUserInvalidShares."</b></i></td></tr>";
+		echo "<tr><td><nobr>Current Shares: </nobr></td><td><b><i>".$totalUserShares."</i></b></td></tr>";
+		echo "<tr><td><nobr>Round Shares: </nobr></td><td><b><i>".$totalOverallShares."</i></b></td></tr>";
+		echo "<tr><td><nobr>Est. Earnings: </nobr></td><td><b><i><nobr>".sprintf("%.8f", $userRoundEstimate)."</i> BTC</nobr></b><br/></td></tr></table><br />";
 		echo "<hr size='1' width='225'>";
 		echo "Current Balance: <b><i>".$currentBalance." </i>BTC</b>";
 		echo "<hr size='1' width='225'><br/>";

@@ -36,7 +36,7 @@
 		<a href="/gettingstarted.php" class="menu">Getting Started</a>
 	</div>
 	<div class="menuBtn">
-		<a href="/chat.php" class="menu">Webirc Chat</a>
+		<a href="/chat.php" class="menu">Chat</a>
 	</div>
 	<div class="menuBtn">
 		<a href="http://forum.bitcoin.org/index.php?topic=11186.0.php" target="_blank" class="menu">Forum</a>

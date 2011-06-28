@@ -25,6 +25,46 @@ class Stats {
 		$row = mysql_fetch_array($result);
 		if ($row != NULL)return intval($row[0]);
 	}
+	
+	function get_server_load($windows = 0) {
+        $os = strtolower(PHP_OS);
+        $avgLoad = 0;
+        if(strpos($os, "win") === false) {
+  			if(file_exists("/proc/loadavg")) {
+         		$load = file_get_contents("/proc/loadavg");
+         		$load = explode(' ', $load);
+         		$avgLoad = $load[0];
+  			} elseif(function_exists("shell_exec")) {
+         		$load = explode(' ', `uptime`);
+         		$avgLoad = $load[count($load)-1];
+  			}
+        } elseif($windows) {
+  			if(class_exists("COM")) {
+         		$wmi = new COM("WinMgmts:\\\\.");
+         		$cpus = $wmi->InstancesOf("Win32_Processor");
+         
+         		$cpuload = 0;
+         		$i = 0;
+         		while ($cpu = $cpus->Next()) {
+    				$cpuload += $cpu->LoadPercentage;
+    				$i++;
+         		}
+         
+         		$cpuload = round($cpuload / $i, 2);
+         		$avgLoad = $cpuload;
+  			}
+        }
+        if ($avgLoad > 90) {
+        	return "critical";
+        } else if ($avgLoad > 80) {
+        	return "high";
+        } else if ($avgLoad > 33) {
+        	return "mid";
+        } else if ($avgLoad > 0) {
+        	return "low";
+        }
+        return "n/a";
+	}
 }
 
 ?>

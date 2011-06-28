@@ -46,8 +46,9 @@ $cookieValid = false; //Don't touch leave as: false
 
 connectToDb();
 include('settings.php');
-
 $settings = new Settings();
+include('includes/stats.php');
+$stats = new Stats();
 
 /////////////////////////////////////////////////////////////////////NO NEED TO MESS WITH THE FOLLOWING | FOR DEVELOPERS ONLY///////////////////////////////////////////////////////////////////
 function connectToDb(){
