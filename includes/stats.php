@@ -54,11 +54,11 @@ class Stats {
          		$avgLoad = $cpuload;
   			}
         }
-        if ($avgLoad > 90) {
+        if ($avgLoad > 0.9) {
         	return "critical";
-        } else if ($avgLoad > 80) {
+        } else if ($avgLoad > 0.8) {
         	return "high";
-        } else if ($avgLoad > 33) {
+        } else if ($avgLoad > 0.33) {
         	return "mid";
         } else if ($avgLoad > 0) {
         	return "low";
