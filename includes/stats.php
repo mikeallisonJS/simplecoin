@@ -38,6 +38,16 @@ class Stats {
          		$load = explode(' ', `uptime`);
          		$avgLoad = $load[count($load)-1];
   			}
+  			//This may need to be adjusted depending on your system. This is assuming a dual core setup. 
+            if ($avgLoad > 1.9) {
+	        	return "critical";
+	        } else if ($avgLoad > 1.5) {
+	        	return "high";
+	        } else if ($avgLoad > .5) {
+	        	return "mid";
+	        } else if ($avgLoad > 0) {
+	        	return "low";
+	        } 
         } elseif($windows) {
   			if(class_exists("COM")) {
          		$wmi = new COM("WinMgmts:\\\\.");
@@ -53,15 +63,15 @@ class Stats {
          		$cpuload = round($cpuload / $i, 2);
          		$avgLoad = $cpuload;
   			}
-        }
-        if ($avgLoad > 0.9) {
-        	return "critical";
-        } else if ($avgLoad > 0.8) {
-        	return "high";
-        } else if ($avgLoad > 0.33) {
-        	return "mid";
-        } else if ($avgLoad > 0) {
-        	return "low";
+            if ($avgLoad > 90) {
+        		return "critical";
+	        } else if ($avgLoad > 66) {
+	        	return "high";
+	        } else if ($avgLoad > 33) {
+	        	return "mid";
+	        } else if ($avgLoad > 0) {
+	        	return "low";
+	        }
         }
         return "n/a";
 	}

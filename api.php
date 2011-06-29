@@ -27,6 +27,7 @@ class User {
 	var $confirmed_rewards = null;
 	var $hashrate = null;	
 	var $payout_history = null;
+	var $estimated_rewards = null;
 	var $workers = array();		
 }
 
@@ -40,11 +41,12 @@ $apikey = mysql_real_escape_string($_GET["api_key"]);
 
 $user = new User();
 
-$resultU = mysql_query("SELECT u.id, u.hashrate, b.balance, b.paid from webUsers u, accountBalance b WHERE u.id = b.userId AND u.api_key = '$apikey'");
+$resultU = mysql_query("SELECT u.id, u.hashrate, b.balance, b.paid, u.round_estimate from webUsers u, accountBalance b WHERE u.id = b.userId AND u.api_key = '$apikey'");
 if ($userobj = mysql_fetch_object($resultU)){
 	$userid = $userobj->id;
 	$user->confirmed_rewards = $userobj->balance;
 	$user->hashrate = $userobj->hashrate;
+	$user->estimated_rewards = $userobj->round_estimate;
 	$user->payout_history = $userobj->paid;
 }
 $resultW = mysql_query("SELECT username, hashrate, active FROM pool_worker WHERE associatedUserId = $userid");
