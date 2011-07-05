@@ -31,7 +31,7 @@ Or download the client to your PC from: <a href="http://www.bitcoin.org//" targe
 You will need to download and install the AMD Stream SDK from  <a href="http://developer.amd.com/SDKS/AMDAPPSDK/DOWNLOADS/Pages/default.aspx" target="_blank" style="color: blue">HERE</a> before you can begin mining<br/><br/> 
 
 	<b><u>Windows</u></b><br/>
-	Download GUIMiner: <a href="/files/guiminer-20110614.exe" style="color: blue">HERE</a><br>
+	Download GUIMiner: <a href="https://forum.bitcoin.org/index.php?topic=3878.0" target="_blank">HERE</a><br>
 	<img src="/images/guiminer.jpg"><br/>
 	<u>GUIMiner options</u><br/>
 	Server: Other</br>
@@ -43,7 +43,7 @@ You will need to download and install the AMD Stream SDK from  <a href="http://d
 	Extra Flags: Can be blank, but I find "-v -w128 -f 60" to work well<br/><br/>
 	
 	<b><u>Linux</u></b><br/>
-	Download hashkill: <a href="/files/hashkill-0.2.4-x86_64.tgz" style="color: blue">64-bit</a> <a href="/files/hashkill-0.2.4-x86.tgz" style="color: blue">32-bit</a><br/>
+	Download hashkill: <a href="https://forum.bitcoin.org/index.php?topic=6819.0" target="_blank">HERE</a><br/>
 	Decompress (tar zxvf hashkill-0.2.4-x86.tar.gz)<br/>
 	Change directory to hashkill<br/>
 	Run: sudo ./install.sh<br/>

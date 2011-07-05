@@ -106,6 +106,10 @@ if (isset($_POST["act"])) {
 				$newPayoutThreshold = 25;
 			if ($newPayoutThreshold < 1)
 				$newPayoutThreshold = 0;
+			if ($newDonatePercent < 0)
+                $newDonatePercent = 0;
+            if ($newDonatePercent > 100)
+            	$newDonatePercent = 100;
 			$updateSuccess1 = mysql_query("UPDATE accountBalance SET sendAddress = '".$newSendAddress."', threshold = '".$newPayoutThreshold."' WHERE userId = ".$userId);
 			if (!is_nan($newDonatePercent))
 				$updateSuccess2 = mysql_query("UPDATE webUsers SET donate_percent='".$newDonatePercent."' WHERE id = ".$userId);
