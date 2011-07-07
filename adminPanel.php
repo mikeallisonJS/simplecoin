@@ -39,7 +39,7 @@ if (isset($_POST["act"]) && isset($_POST["authPin"]))
 	}
 
 	//Make sure an authPin is set and valid when $act is active
-	if($_POST["act"] && $_$authPin == $inputAuthPin){
+	if($_POST["act"] && $authPin == $inputAuthPin){
 		//Update information if needed
 		if($act == "UpdateMainPageSettings"){
 			try {		
