@@ -145,4 +145,52 @@ function antiXss($input) {
 	//strip HTML tags from input data
 	return htmlentities(strip_tags($input), ENT_QUOTES);
 }
+
+function sqlerr($file = '', $line = '')
+{
+  print("<table border=0 bgcolor=blue align=left cellspacing=0 cellpadding=10 style='background: blue'>" .
+    "<tr><td class=embedded><font color=white><h1>SQL Error</h1>\n" .
+  "<b>" . mysql_error() . ($file != '' && $line != '' ? "<p>in $file, line $line</p>" : "") . "</b></font></td></tr></table>");
+  die;
+}
+
+$_current_lock = null;
+
+function islocked($name) {
+	$result = mysql_query("SELECT locked FROM locks WHERE name ='$name' LIMIT 1");
+	if (!$result || $mysql_numrows($result) == 0)
+		return false;
+	return true;
+}
+
+function unlock() {
+	global $_current_lock;
+	$sql = "UPDATE locks SET locked = 0 WHERE name = '" . mysql_real_escape_string($_current_lock) . "'";
+	mysql_query($sql);
+	//echo("unlocked.\n");
+}
+
+function lock($name) {
+	global $_current_lock;
+	mysql_query("LOCK TABLES locks WRITE");
+	$q = mysql_query("SELECT locked FROM locks WHERE name = '" . mysql_real_escape_string($name) . "'");
+
+	$lock = mysql_fetch_object($q);
+	if ($lock === false) {
+		mysql_query("INSERT INTO locks (name, locked) VALUES ('".mysql_real_escape_string($name)."', 1)");
+		//echo("New lock.\n");
+	} elseif ($lock->locked) {
+		echo("Lock already held, exiting. (".$name.")");
+		mysql_query("UNLOCK TABLES");
+		exit();
+		return;
+	} else {		
+		mysql_query("UPDATE locks SET locked = 1 WHERE name = '" . mysql_real_escape_string($name) . "'");
+		//echo("Taking lock.\n");
+	}
+	
+	mysql_query("UNLOCK TABLES");
+	$_current_lock = $name;
+	register_shutdown_function('unlock');
+}
 ?>

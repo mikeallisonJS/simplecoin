@@ -34,47 +34,50 @@ if(isSet($_COOKIE[$cookieName])){
 	}
 		
 	//Get user information
-	$userInfoQ = mysql_query("SELECT id, username, pin, pass, admin, share_count, stale_share_count, shares_this_round, hashrate, api_key, IFNULL(donate_percent, '0') as donate_percent, IFNULL(round_estimate, '0') as round_estimate FROM webUsers WHERE id = '$userId' LIMIT 0,1"); //
+	$userInfoQ = mysql_query("SELECT id, username, email, pin, pass, admin, share_count, stale_share_count, shares_this_round, hashrate, api_key, IFNULL(donate_percent, '0') as donate_percent, IFNULL(round_estimate, '0') as round_estimate, btc_lock FROM webUsers WHERE id = '$userId' LIMIT 0,1"); //
 	if ($userInfo = mysql_fetch_object($userInfoQ)) {
-	$authPin = $userInfo->pin;
-	$hashedPass = $userInfo->pass;
-	$isAdmin = $userInfo->admin;
-	$lifetimeUserShares = $userInfo->share_count - $userInfo->stale_share_count;
-	$lifetimeUserInvalidShares = $userInfo->stale_share_count;
-	$totalUserShares = $userInfo->shares_this_round;
-	$currentUserHashrate = $userInfo->hashrate;
-	$userApiKey = $userInfo->api_key;
-	$donatePercent = $userInfo->donate_percent;
-	$userRoundEstimate = $userInfo->round_estimate;
+		$authPin = $userInfo->pin;
+		$hashedPass = $userInfo->pass;
+		$isAdmin = $userInfo->admin;
+		$lifetimeUserShares = $userInfo->share_count - $userInfo->stale_share_count;
+		$lifetimeUserInvalidShares = $userInfo->stale_share_count;
+		$totalUserShares = $userInfo->shares_this_round;
+		$currentUserHashrate = $userInfo->hashrate;
+		$userApiKey = $userInfo->api_key;
+		$donatePercent = $userInfo->donate_percent;
+		$userRoundEstimate = $userInfo->round_estimate;
+		$userEmail = $userInfo->email;
+		$userBtcLock = $userInfo->btc_lock;
 			
-	//Get current round share information, estimated total earnings
-	//$currentSharesQ = mysql_query("SELECT username FROM pool_worker WHERE associatedUserId = '".$userId."'");
-	$totalSharesQ = mysql_query("SELECT value FROM settings where setting='currentroundshares'");
-	while ($totalOverallSharesR = mysql_fetch_array($totalSharesQ))
-		$totalOverallShares = intval($totalOverallSharesR[0]);
+		//Get current round share information, estimated total earnings
+		//$currentSharesQ = mysql_query("SELECT username FROM pool_worker WHERE associatedUserId = '".$userId."'");
+		$totalSharesQ = mysql_query("SELECT value FROM settings where setting='currentroundshares'");
+		while ($totalOverallSharesR = mysql_fetch_array($totalSharesQ))
+			$totalOverallShares = intval($totalOverallSharesR[0]);
 				
 			
-	//Prevent divide by zero
-	if($totalUserShares > 0 && $totalOverallShares > 0){
-		$estimatedTotalEarnings = $totalUserShares/$totalOverallShares;
-		$estimatedTotalEarnings *= 50; //The expected BTC to be givin out
-		$estimatedTotalEarnings = round($estimatedTotalEarnings, 8);
-	}else{
-		$estimatedTotalEarnings = 0;
-	}
+		//Prevent divide by zero
+		if($totalUserShares > 0 && $totalOverallShares > 0){
+			$estimatedTotalEarnings = $totalUserShares/$totalOverallShares;
+			$estimatedTotalEarnings *= 50; //The expected BTC to be givin out
+			$estimatedTotalEarnings = round($estimatedTotalEarnings, 8);
+		}else{
+			$estimatedTotalEarnings = 0;
+		}
 				
 				
-	//Get Current balance				    
-	$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress, threshold FROM accountBalance WHERE userId = '$userId' LIMIT 0,1");
-	if ($currentBalanceObj = mysql_fetch_object($currentBalanceQ)) {
-		$currentBalance = $currentBalanceObj->balance;
-		//Get payment address that is associated wit this user
-		$paymentAddress = $currentBalanceObj->sendAddress;		
-		$payoutThreshold = $currentBalanceObj->threshold;	
-	} else {
-		$currentBalance = 0;
-		$paymentAddress = "";
-		$payoutThreshold = 0;
+		//Get Current balance				    
+		$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress, threshold FROM accountBalance WHERE userId = '$userId' LIMIT 0,1");
+		if ($currentBalanceObj = mysql_fetch_object($currentBalanceQ)) {
+			$currentBalance = $currentBalanceObj->balance;
+			//Get payment address that is associated wit this user
+			$paymentAddress = $currentBalanceObj->sendAddress;		
+			$payoutThreshold = $currentBalanceObj->threshold;	
+		} else {
+			$currentBalance = 0;
+			$paymentAddress = "";
+			$payoutThreshold = 0;
+		}
 	}
 	}
 }

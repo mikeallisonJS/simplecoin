@@ -70,23 +70,30 @@ if (isset($_POST["act"])) {
 				//Send $currentBalance to $paymentAddress
 				//Validate that a $paymentAddress has been set & is valid before sending
 				$isValidAddress = $bitcoinController->validateaddress($paymentAddress);
-				if($isValidAddress){
-					//Subtract TX feee
-					$currentBalance = $currentBalance - 0.01;
-					//Send money//
-					if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {
-						$paid = 0;
-						$result = mysql_query("SELECT IFNULL(paid,'0') as paid FROM accountBalance WHERE userId=".$userId);
-						if ($resultrow = mysql_fetch_object($result)) $paid = $resultrow->paid + $currentBalance;
-						
-						//Reduce balance amount to zero
-						mysql_query("UPDATE `accountBalance` SET balance = '0', paid = '".$paid."' WHERE `userId` = '".$userId."'");
-
-						$goodMessage = "You have successfully sent ".$currentBalance." to the following address:".$paymentAddress;
-						//Set new variables so it appears on the page flawlessly
-						$currentBalance = 0;						
-					}else{
-						$returnError = "Commodity failed to send.";
+				if($isValidAddress) {
+					if (!islocked("money")) {
+						//Subtract TX feee
+						$currentBalance = $currentBalance - 0.01;
+						//Send money//
+						if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {
+							$paid = 0;
+							$result = mysql_query("SELECT IFNULL(paid,'0') as paid FROM accountBalance WHERE userId=".$userId);
+							if ($resultrow = mysql_fetch_object($result)) $paid = $resultrow->paid + $currentBalance;
+							
+							//Reduce balance amount to zero
+							mysql_query("UPDATE accountBalance SET balance = '0', paid = '".$paid."' WHERE userId = $userId");
+	
+							$goodMessage = "You have successfully sent ".$currentBalance." to the following address:".$paymentAddress;
+							//Set new variables so it appears on the page flawlessly
+							mail("$userEmail", "Simplecoin Manual Payout Notification", "Hello,\n\nYour requested manual payout of ". $currentBalance." BTC has been sent to your payment address ".$paymentAddress.".", "From: Simplecoin Notifications <server@simplecoin.us>");
+							$currentBalance = 0;						
+						}else{
+							$returnError = "Commodity failed to send.";
+						}
+					}
+					else
+					{
+						$returnError = "Automatic payouts currently in progress, try again later.";
 					}
 				}else{
 					$returnError = "That isn't a valid Bitcoin address";
@@ -110,9 +117,13 @@ if (isset($_POST["act"])) {
                 $newDonatePercent = 0;
             if ($newDonatePercent > 100)
             	$newDonatePercent = 100;
-			$updateSuccess1 = mysql_query("UPDATE accountBalance SET sendAddress = '".$newSendAddress."', threshold = '".$newPayoutThreshold."' WHERE userId = ".$userId);
+            if (isset($_POST["cbxLock"]) && $_POST["cbxLock"] == "1") {
+            	mysql_query("UPDATE webUsers SET btc_lock = '1' WHERE id = $userId");
+            	$userBtcLock = true;
+            }
+			$updateSuccess1 = mysql_query("UPDATE accountBalance SET sendAddress = '$newSendAddress', threshold = '$newPayoutThreshold' WHERE userId = $userId");
 			if (!is_nan($newDonatePercent))
-				$updateSuccess2 = mysql_query("UPDATE webUsers SET donate_percent='".$newDonatePercent."' WHERE id = ".$userId);
+				$updateSuccess2 = mysql_query("UPDATE webUsers SET donate_percent='$newDonatePercent' WHERE id = $userId");
 			else
 				$returnError = "Donation % must be numeric.";
 				
@@ -220,9 +231,11 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 	<tr><td>User Id: </td><td><?php echo antiXss($userId); ?></td></tr>
 	<tr><td><a href="api.php?api_key=<?php echo antiXss($userApiKey) ?>" style="color: blue" target="_blank">API</a> Key: </td><td><?php echo antiXss($userApiKey); ?></td></tr>
 	<tr><td></td></tr>
-	<tr><td>Payment Address: </td><td><input type="text" name="paymentAddress" value="<?php echo antiXss($paymentAddress)?>" size="40"></td></tr>
+	<tr><td>Payment Address: </td>
+		<td><?php if (!$userBtcLock) { ?><input type="text" name="paymentAddress" value="<?php echo antiXss($paymentAddress); ?>" size="40"><?php } else { echo antiXss($paymentAddress); } ?></td></tr>
+	<?php if (!$userBtcLock) { ?><tr><td colspan="2"><input type="checkbox" name="cbxLock" value="1" /> Permanently lock Bitcoin address to this account</td></tr><?php } ?>
 	<tr><td>Donation %: </td><td><input type="text" name="donatePercent" value="<?php echo antiXss($donatePercent);?>" size="4"></td></tr>
-	<tr><td>Automatic Payout: </br>(1-25 BTC, 0 for manual)</td><td valign="top"><input type="text" name="payoutThreshold" value="<?php echo antiXss($payoutThreshold);?>" size="2" maxlength="2"></td></tr>
+	<tr><td>Automatic Payout: <br />(1-25 BTC, 0 for manual)</td><td valign="top"><input type="text" name="payoutThreshold" value="<?php echo antiXss($payoutThreshold);?>" size="2" maxlength="2"></td></tr>
 	<tr><td>Authorize Pin: </td><td><input type="password" name="authPin" size="4" maxlength="4"></td></tr>
 </table>
 <input type="submit" value="Update Account Settings"></form>
