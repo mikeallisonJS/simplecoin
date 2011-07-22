@@ -16,18 +16,13 @@
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
-//Check that script is run locally
-if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
-	echo "cronjobs can only be run locally.";
-	exit;
-}
-
 $includeDirectory = "/var/www/includes/";
 
 include($includeDirectory."requiredFunctions.php");
-	
-/////////Update workers
-$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
+
+//Check that script is run locally
+ScriptIsRunLocally();
+
 //Get difficulty
 $difficulty = $bitcoinController->query("getdifficulty");
 
@@ -48,21 +43,18 @@ $r = log(1.0-$p+$p/$c);
 $B = 50;
 $los = log(1/(exp($r)-1));
 
-$currentWorkers = 0;
 //Active in past 10 minutes
 try {
 	$sql ="SELECT sum(a.id) IS NOT NULL AS active, p.username FROM pool_worker p LEFT JOIN ".
-		  "(SELECT count(id) AS id, username FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) group by username ". 
-		  "UNION ".
-		  "SELECT count(id) AS id, username FROM shares_history WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) group by username) a ON p.username=a.username group by username";
+		  "(SELECT count(id) AS id, username FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) group by username) a ". 
+		  "ON p.username=a.username group by username";
 	$result = mysql_query($sql);
 	while ($resultObj = mysql_fetch_object($result)) {
 		if ($resultObj->active == 1)
-			$currentWorkers += 1;
 		mysql_query("UPDATE pool_worker p SET active = $resultObj->active WHERE username='$resultObj->username'");
 	}
-	$settings->setsetting('currentworkers', $currentWorkers);
 } catch (Exception $e) {}
+removeCache("pool_workers");
 
 //This isn't acurate, proportional is closer.
 /*if ($settings->getsetting("siterewardtype") == 0)
@@ -89,7 +81,11 @@ try {
 } else {*/
 //Update them all at once, much more efficient.
 	//Proportional estimate
-	$totalRoundShares = $settings->getsetting("currentroundshares");
-	if ($totalRoundShares < $difficulty) $totalRoundShares = $difficulty;
-	$userListQ = mysql_query("UPDATE webUsers SET round_estimate = (1-$f)*50*(shares_this_round/$totalRoundShares)*(1-(donate_percent/100))");
+	$totalSharesQ = mysql_query("SELECT count(id) as id FROM shares WHERE counted IS null");
+	if ($totalOverallSharesR = mysql_fetch_object($totalSharesQ))
+	{
+		$totalRoundShares = $totalOverallSharesR->id;		
+		if ($totalRoundShares < $difficulty) $totalRoundShares = $difficulty;
+		$userListQ = mysql_query("UPDATE webUsers SET round_estimate = (1-$f)*50*(shares_this_round/$totalRoundShares)*(1-(donate_percent/100))");
+	}
 //}

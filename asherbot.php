@@ -14,15 +14,13 @@ Who Found Last Block
 */
 
 //Total Hashrate
-$hashrate = round($settings->getsetting('currenthashrate')/1000,1)or sqlerr(__FILE__,__LINE__);
+$hashrate = round($stats->currenthashrate()/1000,1)or sqlerr(__FILE__,__LINE__);
 
 //Number of Users Mining
-$res = mysql_query("SELECT count(webUsers.id) FROM webUsers WHERE hashrate > 0") or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_array($res);
-$users = $row[0];
+$users = count($stats->userhashrates());
 
 //Who Found Last Block + Last Time Block Found + Block Number
-$result = mysql_query("SELECT blockNumber, username, time FROM shares_history WHERE upstream_result = 'Y' ORDER BY id DESC LIMIT 1");
+$result = mysql_query("SELECT blockNumber, username, time FROM share WHERE upstream_result = 'Y' ORDER BY id DESC LIMIT 1");
 if ($resultrow = mysql_fetch_object($result)) {
 	$blocknumber = $resultrow->blockNumber;
 	$blocktime = $resultrow->time;

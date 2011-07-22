@@ -19,8 +19,6 @@
 $pageTitle = "- Admin Panel";
 include ("includes/header.php");
 
-$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
-
 $goodMessage = "";
 $returnError = "";
 //Scince this is the Admin panel we'll make sure the user is logged in and "isAdmin" enabled boolean; If this is not a logged in user that is enabled as admin, redirect to a 404 error page
@@ -39,7 +37,8 @@ if (isset($_POST["act"]) && isset($_POST["authPin"]))
 	}
 
 	//Make sure an authPin is set and valid when $act is active
-	if($_POST["act"] && $authPin == $inputAuthPin){
+	if(isset($_POST["act"]) && $authPin == $inputAuthPin) {
+		$act = $_POST["act"];
 		//Update information if needed
 		if($act == "UpdateMainPageSettings"){
 			try {		
@@ -49,6 +48,7 @@ if (isset($_POST["act"]) && isset($_POST["authPin"]))
 				$settings->setsetting("pagetitle", mysql_real_escape_string($_POST["pageTitle"]));
 				$settings->setsetting("slogan", mysql_real_escape_string($_POST["headerSlogan"]));
 				$settings->setsetting("siterewardtype", mysql_real_escape_string($_POST["rewardType"]));
+				$settings->setsetting("sitetxfee", mysql_real_escape_string($_POST["transactionFee"]));
 				$settings->loadsettings(); //refresh settings
 				$goodMessage = "Successfully updated general settings";
 			} catch (Exception $e) {
@@ -77,6 +77,7 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 		Header Title <input type="text" name="headerTitle" value="<?php echo antiXss($settings->getsetting("websitename"));?>"><br/>
 		Header Slogan <input type="text" name="headerSlogan" value="<?php echo antiXss($settings->getsetting("slogan"));?>"><br/>
 		Percentage Fee <input type="text" name="percentageFee" size="10" maxlength="10" value="<?php echo antiXss($settings->getsetting("sitepercent")); ?>">%<br/>
+		Transaction Fee <input type="text" name="transactionFee" size="10" maxlength="10" value="<?php echo antiXss($settings->getsetting("sitetxfee")); ?>" /> BTC<br/>
 		Fee Address <input type="text" name="paymentAddress" size="60" value="<?php echo antiXss($settings->getsetting("sitepayoutaddress"));?>"><br/>
 		Default Reward Type <select name="rewardType">
 		<option value="0" <?php if ($settings->getsetting("siterewardtype") == 0) echo "selected"; ?>>Cheat Proof Score</option>
@@ -99,7 +100,7 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 	$total = $balance - $usersbalance;
 
 	echo "Block Number: ".$bitcoinController->getblocknumber()."<br>";
-	echo "Difficulty: ".$bitcoinController->query("getdifficulty")."<br>";
+	echo "Difficulty: ".$bitcoinDifficulty."<br>";
 	echo "Wallet Balance: ".$balance."<br>";
 	echo "UnPaid: ".$usersbalance."<br>";
 	echo "Total Left: <font color=red>$total</font><br>";

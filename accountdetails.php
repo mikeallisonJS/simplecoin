@@ -61,19 +61,19 @@ if (isset($_POST["act"])) {
 	//Check if authorization pin has been inputted correctly
 	if($inputAuthPin == $authPin && $act){
 		if($act == "cashOut"){
-				
+			$txfee = 0;
+			if ($settings->getsetting("sitetxfee") > 0)
+				$txfee = $settings->getsetting("sitetxfee");
 			//Get user's balance and send it to set address;
 			//Does user have any money in their balance
-			if($currentBalance > 0.01){
-				$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
-
+			if($currentBalance > $txfee) {				
 				//Send $currentBalance to $paymentAddress
 				//Validate that a $paymentAddress has been set & is valid before sending
 				$isValidAddress = $bitcoinController->validateaddress($paymentAddress);
 				if($isValidAddress) {
 					if (!islocked("money")) {
 						//Subtract TX feee
-						$currentBalance = $currentBalance - 0.01;
+						$currentBalance = $currentBalance - $txfee;
 						//Send money//
 						if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {
 							$paid = 0;
@@ -81,8 +81,8 @@ if (isset($_POST["act"])) {
 							if ($resultrow = mysql_fetch_object($result)) $paid = $resultrow->paid + $currentBalance;
 							
 							//Reduce balance amount to zero
-							mysql_query("UPDATE accountBalance SET balance = '0', paid = '".$paid."' WHERE userId = $userId");
-	
+							mysql_query("UPDATE accountBalance SET balance = '0', paid = '$paid' WHERE userId = $userId");
+														
 							$goodMessage = "You have successfully sent ".$currentBalance." to the following address:".$paymentAddress;
 							//Set new variables so it appears on the page flawlessly
 							mail("$userEmail", "Simplecoin Manual Payout Notification", "Hello,\n\nYour requested manual payout of ". $currentBalance." BTC has been sent to your payment address ".$paymentAddress.".", "From: Simplecoin Notifications <server@simplecoin.us>");
@@ -106,7 +106,10 @@ if (isset($_POST["act"])) {
 
 		if($act == "updateDetails"){
 			//Update user's details
-			$newSendAddress = mysql_real_escape_string($_POST["paymentAddress"]);
+			if (!$userBtcLock)
+				$newSendAddress = mysql_real_escape_string($_POST["paymentAddress"]);
+			else
+				$newSendAddress = $paymentAddress;
 			$newDonatePercent = mysql_real_escape_string($_POST["donatePercent"]);
 			$newPayoutThreshold = mysql_real_escape_string($_POST["payoutThreshold"]);
 			if ($newPayoutThreshold > 25)
@@ -242,7 +245,7 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <br />
 <br />
 <h2>Cash Out</h2>
-<i>(Please note: a 0.01 btc transaction fee is required by the bitcoin client for processing)</i><br/>
+<?php if ($settings->getsetting("sitetxfee") > 0) {?><i>(Please note: a <?php echo $settings->getsetting("sitetxfee")?> btc transaction fee is required by the bitcoin client for processing)</i><br/><?php } ?>
 <form action="/accountdetails.php" method="post">
 <input type="hidden" name="act" value="cashOut">
 <table>
@@ -272,7 +275,7 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <tr><td><u>Worker Name </u></td><td><u>Worker Password</u></td><td><u>Active</u></td><td><u>Hashrate (Mhash/s)</u></td><td><u>Update</u></td><td><u>Delete</u></td></tr>
 <?php	
 //Get list of workers from the associatedUserId
-$getWorkers = mysql_query("SELECT `id`, `username`, `password`, active, hashrate FROM `pool_worker` WHERE `associatedUserId` = '".$userId."'");
+$getWorkers = mysql_query("SELECT id, username, password FROM pool_worker WHERE associatedUserId = $userId");
 while($worker = mysql_fetch_array($getWorkers)){
 ?>
 <form action="/accountdetails.php" method="post">
@@ -284,10 +287,10 @@ while($worker = mysql_fetch_array($getWorkers)){
 	?>
 	<tr>
 
-		<td <?php if ($worker["active"] == 0) { ?>style="color: red"<?php } ?>><?php echo antiXss($userInfo->username); ?>.<input type="text" name="workernum" value="<?php echo antiXss($realUsername); ?>" size="10"></td>
+		<td <?php if ($stats->workerhashrate($worker["username"]) == 0) { ?>style="color: red"<?php } ?>><?php echo antiXss($userInfo->username); ?>.<input type="text" name="workernum" value="<?php echo antiXss($realUsername); ?>" size="10"></td>
 	    <td><input type="text" name="password" value="<?php echo antiXss($worker["password"]);?>" size="10"></td>
-	    <td><?php if ($worker["active"] == 1) echo "Y"; else echo "N"; ?>
-	    <td><?php echo antiXss($worker["hashrate"])?></td>
+	    <td><?php if ($stats->workerhashrate($worker["username"]) > 0) echo "Y"; else echo "N"; ?>
+	    <td><?php echo $stats->workerhashrate($worker["username"]); ?></td>
 		<td><input type="submit" name="act" value="Update Worker"></td>
 		<td><input type="submit" name="act" value="Delete Worker"/></td>
 	</tr>

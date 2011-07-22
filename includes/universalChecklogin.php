@@ -31,37 +31,43 @@ if(isSet($_COOKIE[$cookieName])){
 	if (!is_numeric($userId)) {
 		$userId = 0;	
 		exit;
-	}
-		
+	}	
+
 	//Get user information
-	$userInfoQ = mysql_query("SELECT id, username, email, pin, pass, admin, share_count, stale_share_count, shares_this_round, hashrate, api_key, IFNULL(donate_percent, '0') as donate_percent, IFNULL(round_estimate, '0') as round_estimate, btc_lock FROM webUsers WHERE id = '$userId' LIMIT 0,1"); //
-	if ($userInfo = mysql_fetch_object($userInfoQ)) {
+	$userInfoQ = mysql_query_cache("SELECT id, username, email, pin, pass, admin, share_count, stale_share_count, api_key, IFNULL(donate_percent, '0') as donate_percent, btc_lock FROM webUsers WHERE id = $userId LIMIT 0,1", 6); //	
+	if ($userInfo = $userInfoQ[0]) {
 		$authPin = $userInfo->pin;
 		$hashedPass = $userInfo->pass;
 		$isAdmin = $userInfo->admin;
 		$lifetimeUserShares = $userInfo->share_count - $userInfo->stale_share_count;
-		$lifetimeUserInvalidShares = $userInfo->stale_share_count;
-		$totalUserShares = $userInfo->shares_this_round;
-		$currentUserHashrate = $userInfo->hashrate;
+		$lifetimeUserInvalidShares = $userInfo->stale_share_count;		
+		$totalUserShares = 0;
+		$currentUserHashrate = $stats->userhashrate($userInfo->username);
 		$userApiKey = $userInfo->api_key;
 		$donatePercent = $userInfo->donate_percent;
-		$userRoundEstimate = $userInfo->round_estimate;
+		$userRoundEstimate = 0;
 		$userEmail = $userInfo->email;
 		$userBtcLock = $userInfo->btc_lock;
-			
+
+		$totalUserShares = $stats->usersharecount($userId);
+		
 		//Get current round share information, estimated total earnings
-		//$currentSharesQ = mysql_query("SELECT username FROM pool_worker WHERE associatedUserId = '".$userId."'");
-		$totalSharesQ = mysql_query("SELECT value FROM settings where setting='currentroundshares'");
-		while ($totalOverallSharesR = mysql_fetch_array($totalSharesQ))
-			$totalOverallShares = intval($totalOverallSharesR[0]);
-				
+		$totalOverallShares = $stats->currentshares();	
 			
 		//Prevent divide by zero
-		if($totalUserShares > 0 && $totalOverallShares > 0){
-			$estimatedTotalEarnings = $totalUserShares/$totalOverallShares;
-			$estimatedTotalEarnings *= 50; //The expected BTC to be givin out
-			$estimatedTotalEarnings = round($estimatedTotalEarnings, 8);
-		}else{
+		if($totalUserShares > 0 && $totalOverallShares > 0) {
+			//Get site percentage
+			$sitePercent = 0;
+			if (is_numeric($settings->getsetting("sitepercent")))
+				$sitePercent = $settings->getsetting("sitepercent")/100;
+			
+			if ($totalOverallShares > $bitcoinDifficulty)
+				$estimatedTotalEarnings = $totalUserShares/$totalOverallShares;
+			else
+				$estimatedTotalEarnings = $totalUserShares/$bitcoinDifficulty;
+			$estimatedTotalEarnings *= $bonusCoins*(1-$sitePercent); //The expected BTC to be givin out
+			$userRoundEstimate = round($estimatedTotalEarnings, 8);
+		} else {
 			$estimatedTotalEarnings = 0;
 		}
 				
@@ -79,6 +85,6 @@ if(isSet($_COOKIE[$cookieName])){
 			$payoutThreshold = 0;
 		}
 	}
-	}
+
 }
 ?>

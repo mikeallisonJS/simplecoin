@@ -21,13 +21,15 @@ $cookieValid	= false;
 $activeMiners = false;
 
 include("requiredFunctions.php");
+
+include('includes/stats.php');
+$stats = new Stats();
+
 include("universalChecklogin.php");
 
 if (!isset($pageTitle)) $pageTitle = outputPageTitle();
 else $pageTitle = outputPageTitle(). " ". $pageTitle;
 
-include('includes/stats.php');
-$stats = new Stats();
 ?>
 <!DOCTYPE unspecified PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -69,9 +71,9 @@ $stats = new Stats();
 					<td><img src="images/logo.jpg"></td>
 					<td align="right" valign="top" id="currentRates">
 						<table border="0" cellspacing="1">
-						<tr><td style="color: #FFF; text-align: right"><a href="http://www.mtgox.com" target="_blank" style="color: #FFF">MtGox (USD):</a></td><td style="color: #FFF">$<?php print $settings->getsetting('mtgoxlast'); ?></td></tr>
-						<tr><td style="color: #FFF; text-align: right">Current Hashrate:</td><td style="color: #FFF"><?php print round($settings->getsetting('currenthashrate')/1000,1); ?> GH/s</td></tr>
-						<tr><td style="color: #FFF; text-align: right">Current Workers:</td><td style="color: #FFF"><?php print $settings->getsetting('currentworkers'); ?></td></tr>
+						<tr><td style="color: #FFF; text-align: right"><a href="http://www.mtgox.com" target="_blank" style="color: #FFF">MtGox (USD):</a></td><td style="color: #FFF">$<?php print $stats->mtgoxlast(); ?></td></tr>
+						<tr><td style="color: #FFF; text-align: right">Current Hashrate:</td><td style="color: #FFF"><?php print round($stats->currenthashrate()/1000,1); ?> GH/s</td></tr>
+						<tr><td style="color: #FFF; text-align: right">Current Workers:</td><td style="color: #FFF"><?php print $stats->currentworkers(); ?></td></tr>
 						<tr><td style="color: #FFF; text-align: right">Server Load:</td><td style="color: #FFF"><?php print $stats->get_server_load(); ?></td></tr>
 						</table>
 					</td>

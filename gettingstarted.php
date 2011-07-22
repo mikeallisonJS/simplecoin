@@ -34,9 +34,9 @@ You will need to download and install the AMD Stream SDK from  <a href="http://d
 	Download GUIMiner: <a href="https://forum.bitcoin.org/index.php?topic=3878.0" target="_blank">HERE</a><br>
 	<img src="/images/guiminer.jpg"><br/>
 	<u>GUIMiner options</u><br/>
-	Server: Other</br>
-	Host: simplecoin.us</br>
-	Port: 8337</br>
+	Server: Other<br />
+	Host: simplecoin.us<br />
+	Port: 8337<br />
 	Username: &lt;your user name&gt;.&lt;miner name (default is 1)&gt;<br/>
 	Password: &lt;your miner password (default is 'x')&gt;<br/>
 	Device: Select the graphics card/cpu you would like to use<br/>

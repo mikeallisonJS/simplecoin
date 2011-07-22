@@ -16,12 +16,6 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
-  
-//Check that script is run locally
-if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
-	echo "cronjobs can only be run locally.";
-	exit;
-}
  
 //Set page starter variables//
 $includeDirectory = "/var/www/includes/";
@@ -29,10 +23,13 @@ $includeDirectory = "/var/www/includes/";
 //Include hashing functions
 include($includeDirectory."requiredFunctions.php");
 
+//Check that script is run locally
+ScriptIsRunLocally();
+
 //get counted shares by user id and move to shares_counted
 $sql = "SELECT DISTINCT p.associatedUserId, blockNumber, sum(s.valid) as valid, IFNULL(sum(si.invalid),0) as invalid, max(maxId) as maxId FROM ". 
-		"(SELECT DISTINCT username, max(blockNumber) as blockNumber, count(id) as valid, max(id) as maxId FROM shares_history WHERE counted='1' AND our_result='Y' GROUP BY username) s LEFT JOIN ".
-		"(SELECT DISTINCT username, count(id) as invalid FROM shares_history WHERE counted='1' AND our_result='N' GROUP BY username) si ON s.username=si.username ". 
+		"(SELECT DISTINCT username, max(blockNumber) as blockNumber, count(id) as valid, max(id) as maxId FROM shares WHERE counted='1' AND our_result='Y' GROUP BY username) s LEFT JOIN ".
+		"(SELECT DISTINCT username, count(id) as invalid FROM shares WHERE counted='1' AND our_result='N' GROUP BY username) si ON s.username=si.username ". 
 		"INNER JOIN pool_worker p ON p.username = s.username ".
 		"GROUP BY associatedUserId";	
 $sharesQ = mysql_query($sql);
@@ -62,5 +59,5 @@ if (strlen($shareInputSql) > 0)
 	mysql_query($shareInputSql);
 
 //Remove counted shares from shares_history
-mysql_query("DELETE FROM shares_history WHERE counted = '1' AND id <= $maxId");	
+mysql_query("DELETE FROM shares WHERE counted = '1' AND id <= $maxId");	
 ?>

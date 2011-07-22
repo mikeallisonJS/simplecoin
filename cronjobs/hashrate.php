@@ -16,61 +16,30 @@
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
-//Check that script is run locally
-if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
-	echo "cronjobs can only be run locally.";
-	exit;
-}
-
 $includeDirectory = "/var/www/includes/";
 
 include($includeDirectory."requiredFunctions.php");
 
-//Hashrate by worker
-$sql =  "SELECT IFNULL(sum(a.id),0) as id, p.username FROM pool_worker p LEFT JOIN ".
-			"((SELECT count(id) as id, username ". 
-			"FROM shares ". 
-			"WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ".
-			"GROUP BY username) ".
-		"UNION ". 
-			"(SELECT count(id) as id, username ". 
-			"FROM shares_history ". 
-			"WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ". 
-			"GROUP BY username)) a ".
-		"ON p.username=a.username ".
-		"GROUP BY username";
-$result = mysql_query($sql);
-while ($resultrow = mysql_fetch_object($result)) {
-	$hashrate = $resultrow->id;
-	$hashrate = round((($hashrate*4294967296)/600)/1000000, 0);
-	mysql_query("UPDATE pool_worker SET hashrate = $hashrate WHERE username = '$resultrow->username'");
-}
+//Check that script is run locally
+ScriptIsRunLocally();
 
-//Total Hashrate (more exact than adding)
-$sql =  "SELECT sum(a.id) as id FROM ".
-			"((SELECT count(id) as id FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ".
-		"UNION ". 
-			"(SELECT count(id) as id FROM shares_history WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE)) ". 
-			") a ";
-$result = mysql_query($sql);
-if ($resultrow = mysql_fetch_object($result)) {
-	$hashrate = $resultrow->id;
-	$hashrate = round((($hashrate*4294967296)/600)/1000000, 0);	
-	mysql_query("UPDATE settings SET value = '$hashrate' WHERE setting='currenthashrate'");
-}
+//Hashrate by worker	
+removeCache("worker_hashrates");	
+
+//Total Hashrate (more exact than adding) (just flush stats so it is rebuilt)
+removeCache("pool_hashrate");
+
 
 //Hashrate by user
-$sql = "SELECT u.id, IFNULL(sum(p.hashrate),0) as hashrate ".
+removeCache("user_hashrates");
+$sql = "INSERT INTO userHashrates (userId, hashrate) ".
+	 	"SELECT u.id as userId, IFNULL(sum(p.hashrate),0) as hashrate ".
 		"FROM webUsers u LEFT JOIN pool_worker p ". 
 		"ON p.associatedUserId = u.id ".
-		"GROUP BY id";
-$result = mysql_query($sql);
-while ($resultrow = mysql_fetch_object($result)) {
-	mysql_query("UPDATE webUsers SET hashrate = $resultrow->hashrate WHERE id = $resultrow->id");
-	mysql_query("INSERT INTO userHashrates (userId, hashrate) VALUES ($resultrow->id, $resultrow->hashrate)");
-}
+		"GROUP BY u.id";
+mysql_query($sql);
 
 $currentTime = time();
-mysql_query("update settings set value='$currentTime' where setting='statstime'");
+$settings->setsetting("statstime", $currentTime);
 	
 ?>

@@ -43,7 +43,7 @@ if($show == "searchUsers"){
 				<?php
 							$searchUsername = mysql_real_escape_string($searchUsername);
 						//Query for a list of users that match this username
-							$searchQ = mysql_query("SELECT `accountLocked`, `email`, `username`, `id`, `loggedIp`, hashrate, share_count, stale_share_count, activeEmail FROM `webUsers` WHERE `username` LIKE '".$searchUsername."'");
+							$searchQ = mysql_query("SELECT `accountLocked`, `email`, `username`, `id`, `loggedIp`, share_count, stale_share_count, activeEmail FROM `webUsers` WHERE `username` LIKE '".$searchUsername."'");
 				?>
 					<form action="?show=updateSearchedUsers&searchUsername=<?php echo $searchUsername;?>" method="post">
 					<h2 style="text-decoration:underline;">Results for <i><?php echo $searchUsername; ?></i></h2>
@@ -58,7 +58,7 @@ if($show == "searchUsers"){
 							print("<td align=left>$user[id]</td>");
 							print("<td align=left>$user[username]</td>");
 							print("<td align=left>$user[email]</td>");
-							print("<td align=left>$user[hashrate]</td>");
+							print("<td align=left>$stats->userhashrate($user[username])</td>");
 							print("<td align=left>$user[share_count]</td>");
 							print("<td align=left>$user[stale_share_count]</td>");
 							print("<td align=left>$user[loggedIp]</td>");

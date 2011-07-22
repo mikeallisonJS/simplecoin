@@ -21,11 +21,18 @@ include ("includes/header.php");
 
 <h1>Welcome to SimpleCoin.us</h1> <br/>
 
-If you are a new user, please create an account, Click "Getting Started", and follow the instructions on that page.<br/><br/>
+If you are a new user, please create an account. Then click "Getting Started", and follow the instructions on that page.<br/><br/>
 
 Simplecoin is run completely by opensource software. Even this website is opensource!<br/><br/>
 
-We currently have a fee of 0.001% and use cheat-proof scoring to ensure payout of your hard work.<br/><br/>
+We currently have a fee of <?php echo antiXss($settings->getsetting("sitepercent"))?>%, 
+a transaction fee of <?php echo antiXss($settings->getsetting("sitetxfee"))?> BTC per transaction and use 
+<?php 
+if ($settings->getsetting("siterewardtype") == 0) echo "cheat proof";
+else if ($settings->getsetting("siterewardtype") == 2) echo "Max Pay per share";
+else echo "proportional"; 
+?>
+ round scoring to ensure payout of your hard work.<br/><br/>
 
 If you have any issues, please note them in the forum.<br/><br/>
 

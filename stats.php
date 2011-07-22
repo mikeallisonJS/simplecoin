@@ -34,9 +34,7 @@ $onion_winners = 10;
 
 $BTC_per_block = 50; // don't keep this hardcoded
 
-$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
-
-$difficulty = $bitcoinController->query("getdifficulty");
+$difficulty = $bitcoinDifficulty;
 //time = difficulty * 2**32 / hashrate
 // hashrate is in Mhash/s
 function CalculateTimePerBlock( $btc_difficulty, $_hashrate ){
@@ -80,14 +78,12 @@ if( !$cookieValid ){
 
 // TOP 30 CURRENT HASHRATES  *************************************************************************************************************************
 
-$result = mysql_query("SELECT id, hashrate FROM webUsers ORDER BY hashrate DESC LIMIT " . $numberResults);
+$result = $stats->userhashrates();
 $rank = 1;
 $user_found = false;
 
-while ($resultrow = mysql_fetch_object($result)) {
-	$resdss = mysql_query("SELECT username FROM webUsers WHERE id=$resultrow->id");
-	$resdss = mysql_fetch_object($resdss);
-	$username = $resdss->username;
+foreach ($result as $username => $user_hash_rate) {
+	//$username = $resultrow->username;
 	if( $cookieValid && $username == $userInfo->username )
 	{
 		echo "<tr class=\"user_position\">";
@@ -104,7 +100,7 @@ while ($resultrow = mysql_fetch_object($result)) {
 		echo "&nbsp;<img src=\"/images/crown.png\" />";
 	}
 
-	$user_hash_rate = $resultrow->hashrate;
+	//$user_hash_rate = $resultrow->hashrate;
 
 	echo "</td><td>" . $username . "</td><td>" . number_format( $user_hash_rate ) . "</td><td>&nbsp;";
 
@@ -123,18 +119,18 @@ if( $cookieValid && $user_found == false )
 {
 	$query_init       = "SET @rownum := 0";
 
-	$query_getrank    =   "SELECT rank, hashrate FROM (
+	$query_getrank    = "SELECT rank, hashrate FROM (
                         SELECT @rownum := @rownum + 1 AS rank, hashrate, id
                         FROM webUsers ORDER BY hashrate DESC
                         ) as result WHERE id=" . $userInfo->id;
 
 	mysql_query( $query_init );
-	$result = mysql_query( $query_getrank );
-	$row = mysql_fetch_array( $result );
+	$result = mysql_query_cache( $query_getrank );
+	$row = $result[0];
 
-	$user_hashrate = $row['hashrate'];
+	$user_hashrate = $row->hashrate;
 
-	echo "<tr class=\"user_position\"><td>" . $row['rank'] . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $user_hashrate ) . "</td><td>";
+	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $user_hashrate ) . "</td><td>";
 
 	$time_per_block = CalculateTimePerBlock($difficulty, $user_hashrate);
 
@@ -153,13 +149,13 @@ if( $cookieValid && $user_found == false )
 
 // TOP 30 LIFETIME SHARES  *************************************************************************************************************************
 
-$result = mysql_query("SELECT id, share_count-stale_share_count+shares_this_round AS shares FROM webUsers ORDER BY shares DESC LIMIT " . $numberResults);
+$result = mysql_query_cache("SELECT id, share_count-stale_share_count+shares_this_round AS shares FROM webUsers ORDER BY shares DESC LIMIT " . $numberResults);
 $rank = 1;
 $user_found = false;
 
-while ($resultrow = mysql_fetch_object($result)) {
-	$resdss = mysql_query("SELECT username, share_count-stale_share_count+shares_this_round AS shares FROM webUsers WHERE id=$resultrow->id");
-	$resdss = mysql_fetch_object($resdss);
+foreach ($result as $resultrow) {
+	$resdss = mysql_query_cache("SELECT username, share_count-stale_share_count+shares_this_round AS shares FROM webUsers WHERE id=$resultrow->id");
+	$resdss = $resdss[0];
 	$username = $resdss->username;
 	if( $cookieValid && $username == $userInfo->username )
 	{
@@ -178,7 +174,7 @@ while ($resultrow = mysql_fetch_object($result)) {
 		echo "&nbsp;<img src=\"/images/crown.png\" />";
 	}
 
-	echo "</td><td>" . $username . "</td><td>" . number_format($resultrow->shares) . "</td></tr>";
+	echo "</td><td>".$username."</td><td>" . number_format($resultrow->shares) . "</td></tr>";
 	$rank++;
 }
 
@@ -192,10 +188,10 @@ if( $cookieValid && $user_found == false )
                         ) as result WHERE id=" . $userInfo->id;
 
 	mysql_query( $query_init );
-	$result = mysql_query( $query_getrank );
-	$row = mysql_fetch_array( $result );
+	$result = mysql_query_cache($query_getrank);
+	$row = $result[0];
 
-	echo "<tr class=\"user_position\"><td>" . $row['rank'] . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $row['shares'] ) . "</td></tr>";
+	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $row['shares'] ) . "</td></tr>";
 }
 ?>
 </table>
@@ -209,24 +205,24 @@ echo "<table class=\"stats_table server_width\">";
 
 echo "<tr><th colspan=\"2\" scope=\"col\">Server Stats</td></tr>";
 
-$hashrate = $settings->getsetting('currenthashrate');
+$hashrate = $stats->currenthashrate();
 $show_hashrate = round($hashrate / 1000,3);
 
 echo "<tr><td class=\"leftheader\">Pool Hash Rate</td><td>". number_format($show_hashrate, 3) . " Ghashes/s</td></tr>";
 
-$results = mysql_query("SELECT (1 - (SUM(stale_share_count)/SUM(share_count))) * 100 AS efficiency FROM webUsers") or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_object($results);
+$results = mysql_query_cache("SELECT (1 - (SUM(stale_share_count)/SUM(share_count))) * 100 AS efficiency FROM webUsers") or sqlerr(__FILE__, __LINE__);
+$row = $results[0];
 
 echo "<tr><td class=\"leftheader\">Pool Efficiency</td><td><span class=\"green\">". number_format($row->efficiency, 2) . "%</span></td></tr>";
 
-$res = mysql_query("SELECT count(webUsers.id) FROM webUsers WHERE hashrate > 0") or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_array($res);
-$users = $row[0];
+$res = mysql_query_cache("SELECT count(webUsers.id) as users FROM webUsers WHERE hashrate > 0") or sqlerr(__FILE__, __LINE__);
+$row = $res[0];
+$users = $row->users;
 
 echo "<tr><td class=\"leftheader\">Current Users Mining</td><td>" . number_format($users) . "</td></tr>";
-echo "<tr><td class=\"leftheader\">Current Total Miners</td><td>" . number_format($settings->getsetting('currentworkers')) . "</td></tr>";
+echo "<tr><td class=\"leftheader\">Current Total Miners</td><td>" . number_format($stats->currentworkers()) . "</td></tr>";
 
-$current_block_no = $bitcoinController->query("getblocknumber");
+$current_block_no = $bitcoinController->getblocknumber();
 
 echo "<tr><td class=\"leftheader\">Current Block</td><td><a href=\"http://blockexplorer.com/b/" . $current_block_no . "\">";
 echo number_format($current_block_no) . "</a></td></tr>";
@@ -235,12 +231,12 @@ $show_difficulty = round($difficulty, 2);
 
 echo "<tr><td class=\"leftheader\">Current Difficulty</th><td><a href=\"http://dot-bit.org/tools/nextDifficulty.php\">" . number_format($show_difficulty) . "</a></td></tr>";
 
-$result = mysql_query("SELECT n.blockNumber, n.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT 1");
+$result = mysql_query_cache("SELECT n.blockNumber, n.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT 1", 60);
 
 $show_time_since_found = false;
 $time_last_found;
 
-if ($resultrow = mysql_fetch_object($result)) {
+foreach ($result as $resultrow) {
 
 	$found_block_no = $resultrow->blockNumber;
 	$confirm_no = $resultrow->confirms;
@@ -290,16 +286,14 @@ echo "</table>";
 echo "<table class=\"stats_table server_width top_spacing\">";
 echo "<tr><th scope=\"col\" colspan=\"4\">Last $last_no_blocks_found Blocks Found - <a href=\"blocks.php\">All Blocks Found</a></th></tr>";
 echo "<tr><th scope=\"col\">Block</th><th scope=\"col\">Confirms</th><th scope=\"col\">Finder</th><th scope=\"col\">Time</th></tr>";
-$result = mysql_query("SELECT n.blockNumber, n.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT " . $last_no_blocks_found);
+$result = mysql_query_cache("SELECT w.username, n.blockNumber, n.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT " . $last_no_blocks_found);
 
-while($resultrow = mysql_fetch_object($result)) {
+foreach ($result as $resultrow) {
 	echo "<tr>";
-	$resdss = mysql_query("SELECT username FROM shares_history WHERE upstream_result = 'Y' AND blockNumber = $resultrow->blockNumber");
-	$resdss = mysql_fetch_object($resdss);
-
-	$splitUsername = explode(".", $resdss->username);
+	$splitUsername = explode(".", $resultrow->username);
 	$realUsername = $splitUsername[0];
 
+	
 	$confirms = $resultrow->confirms;
 
 	if ($confirms > 120) {
@@ -341,18 +335,18 @@ WHERE CAST(FROM_UNIXTIME(timestamp) as DATE) BETWEEN DATE_SUB(CURDATE(), INTERVA
 GROUP BY DAY(FROM_UNIXTIME(timestamp))
 
 ) as blah group by date";
-$result = mysql_query($query);
+$result = mysql_query_cache($query);
 
-while($resultrow = mysql_fetch_object($result)) {
+foreach ($result as $resultrow) {
 	echo "<th scope=\"col\">" . $resultrow->date . "</th>";
 }
 
-echo "</thead><tbody><tr><th scope=\"row\">Ozco.in Pool</th>";
+echo "</thead><tbody><tr><th scope=\"row\">Simplecoin.us Pool</th>";
 
 // re-iterate through results
-mysql_data_seek($result, 0);
+//mysql_data_seek($result, 0);
 
-while($resultrow = mysql_fetch_object($result)) {
+foreach ($result as $resultrow) {
 	echo "<td>" . $resultrow->blocks_found . "</td>";
 }
 
@@ -367,11 +361,11 @@ echo "<table class=\"stats_table member_width\">";
 echo "<tr><th colspan=\"3\" scope=\"col\">Our " . $onion_winners . " Onion Winners (Active this Round)</th></tr>";
 echo "<tr><th scope=\"col\">Rank</th><th scope=\"col\">User Name</th><th scope=\"col\">% Of Stales</th></tr>";
 
-$result = mysql_query("SELECT id, username, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC LIMIT " . $onion_winners);
+$result = mysql_query_cache("SELECT id, username, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC LIMIT " . $onion_winners);
 $rank = 1;
 $user_found = false;
 
-while ($resultrow = mysql_fetch_object($result)) {
+foreach ($result as $resultrow) {
 	//$resdss = mysql_query("SELECT username FROM webUsers WHERE id=$resultrow->id");
 	//$resdss = mysql_fetch_object($resdss);
 	//$username = $resdss->username;

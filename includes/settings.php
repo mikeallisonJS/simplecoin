@@ -25,8 +25,8 @@ class Settings {
 	}
 	
 	function loadsettings() {			    
-		$settingsQ = mysql_query("SELECT setting, value FROM settings"); 
-		while ($settingsR = mysql_fetch_object($settingsQ)) {
+		$settingsQ = mysql_query_cache("SELECT setting, value FROM settings"); 
+		foreach ($settingsQ as$settingsR ) {		
 			$setting = $settingsR->setting;
 			$value = $settingsR->value;
 			$this->settingsarray[$setting] = $value;
@@ -39,6 +39,8 @@ class Settings {
 	
 	function setsetting($settingname, $value) {		
       	mysql_query("UPDATE settings SET value='$value' WHERE setting ='$settingname'");
+		$this->settingsarray[$settingname] = $value;
+		removeSqlCache("SELECT setting, value FROM settings");
 	}
 }
 

@@ -16,39 +16,28 @@
 
 // 	  BTC Donations: 163Pv9cUDJTNUbadV4HMRQSSj3ipwLURRc
 
-//Check that script is run locally
-if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
-	echo "cronjobs can only be run locally.";
-	exit;
-}
-
 $includeDirectory = "/var/www/includes/";
 
 include($includeDirectory."requiredFunctions.php");
 	
+//Check that script is run locally
+ScriptIsRunLocally();
 ////Update share counts
 
 //Update past shares
 try {
-	$pastSharesQ = mysql_query("SELECT DISTINCT userId, sum(count) AS valid, sum(invalid) AS invalid, id FROM shares_counted GROUP BY userId");
-	while ($pastSharesR = mysql_fetch_object($pastSharesQ)) {
-		mysql_query("UPDATE webUsers SET share_count = $pastSharesR->valid, stale_share_count = $pastSharesR->invalid WHERE id = $pastSharesR->userId");
-	} 
+	$sql = "UPDATE webUsers u, ".
+		   	"	(SELECT DISTINCT userId, sum(count) AS valid, sum(invalid) AS invalid, id FROM shares_counted GROUP BY userId) s ".
+			"SET u.share_count = s.valid, u.stale_share_count = s.invalid WHERE u.id = s.userId";
+	mysql_query ($sql);
 } catch (Exception $ex)  {}
-
-//Update current round shares
-try {
-	$sql ="SELECT sum(id) AS id, a.associatedUserId FROM ".
-		  "(SELECT count(s.id) AS id, p.associatedUserId FROM shares s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' GROUP BY p.associatedUserId  ".
-		  "UNION ".
-		  "SELECT count(s.id) AS id, p.associatedUserId FROM shares_history s, pool_worker p WHERE p.username=s.username AND s.our_result='Y' AND s.counted='0' GROUP BY p.associatedUserId) a GROUP BY associatedUserId ";
-	$result = mysql_query($sql);
-	$totalsharesthisround = 0;
-	while ($row = mysql_fetch_object($result)) {
-		mysql_query("UPDATE webUsers SET shares_this_round = $row->id WHERE id = $row->associatedUserId");
-		$totalsharesthisround += $row->id;
-	}
-	mysql_query("UPDATE settings SET value = '$totalsharesthisround' WHERE setting='currentroundshares'");
-} catch (Exception $ex)  {}
+//
+////Update current round shares
+$sql = "UPDATE webUsers u, ".
+	   "	(SELECT IFNULL(count(s.id),0) AS id, p.associatedUserId FROM pool_worker p ".
+	   "	LEFT JOIN shares s ON p.username=s.username ".
+	   "	WHERE s.our_result='Y' AND s.counted IS NULL GROUP BY p.associatedUserId) a ". 
+	   "SET shares_this_round = a.id WHERE u.id = a.associatedUserId ";
+mysql_query($sql);
 
 ?>

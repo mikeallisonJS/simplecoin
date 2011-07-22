@@ -38,17 +38,34 @@ $cookieName = "simplecoinus"; //Set this to what ever you want "Cheesin?"
 $cookiePath = "/";	//Choose your path!
 $cookieDomain = ""; //Set this to your domain
 
+//Number of bonus coins to award
+$bonusCoins = 50;
+
+//Include bitcoind controller
 include("bitcoinController/bitcoin.inc.php");
+
+//Setup Memcached 
+global $memcache;
+$memcache = new Memcached();
+$memcache->addServer("localhost",11212);
 
 //Encrypt settings
 $salt = "123483jd7Dg6h5s92k"; //Just type a random series of numbers and letters; set it to anything or any length you want. "You can never have enough salt."
+
+/////////////////////////////////////////////////////////////////////NO NEED TO MESS WITH THE FOLLOWING | FOR DEVELOPERS ONLY///////////////////////////////////////////////////////////////////
+
 $cookieValid = false; //Don't touch leave as: false
 
 connectToDb();
 include('settings.php');
 $settings = new Settings();
 
-/////////////////////////////////////////////////////////////////////NO NEED TO MESS WITH THE FOLLOWING | FOR DEVELOPERS ONLY///////////////////////////////////////////////////////////////////
+//Open a bitcoind connection	
+$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
+
+//setup bitcoinDifficulty cache object
+$bitcoinDifficulty = GetCachedBitcoinDifficulty();
+
 function connectToDb(){
 	//Set variables to global retireve outside of the scope
 	global $dbHost, $dbUsername, $dbPassword, $dbDatabasename;
@@ -107,8 +124,6 @@ class checkLogin
 	}
 }
 
-
-
 function outputPageTitle(){
 	if (!isset($settings))
 	{
@@ -157,8 +172,8 @@ function sqlerr($file = '', $line = '')
 $_current_lock = null;
 
 function islocked($name) {
-	$result = mysql_query("SELECT locked FROM locks WHERE name ='$name' LIMIT 1");
-	if (!$result || $mysql_numrows($result) == 0)
+	$result = mysql_query("SELECT locked FROM locks WHERE name ='$name' and locked=1 LIMIT 1");
+	if (!$result || mysql_numrows($result) == 0)
 		return false;
 	return true;
 }
@@ -193,4 +208,60 @@ function lock($name) {
 	$_current_lock = $name;
 	register_shutdown_function('unlock');
 }
+
+function ScriptIsRunLocally() {
+	if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != "127.0.0.1") {
+		echo "This script can only be run locally.";
+		exit;
+	}
+}
+
+//Cache functions
+
+# Gets key / value pair into memcache ... called by mysql_query_cache()
+function getCache($key) {
+    global $memcache;
+    return ($memcache) ? $memcache->get($key) : false;
+}
+
+# Puts key / value pair into memcache ... called by mysql_query_cache()
+function setCache($key, $object, $timeout = 600) {
+    global $memcache;
+    return ($memcache) ? $memcache->set($key, $object, $timeout) : false;
+}
+
+function removeCache($key) {
+	global $memcache;
+	$memcache->delete($key);
+}
+
+function removeSqlCache($key) {
+	global $memcache;
+	$memcache->delete(md5("mysql_query".$key));
+}
+
+# Caching version of mysql_query()
+function mysql_query_cache($sql, $timeout = 600) {
+	if($objResultset = unserialize(getCache(md5("mysql_query".$sql))))  {		
+    	return $objResultset;
+  	}
+    $objResultSet = mysql_query($sql); 
+    $objarray = Array();
+    while ($row = mysql_fetch_object($objResultSet)) {
+    	$objarray[] = $row;
+    }   
+    setCache(md5("mysql_query".$sql), serialize($objarray), $timeout);
+    return $objarray;
+}
+
+function GetCachedBitcoinDifficulty() {
+	global $bitcoinController;
+	$difficulty = 0;
+	if (!($difficulty = getCache("bitcoinDifficulty"))) {	
+		$difficulty = $bitcoinController->query("getdifficulty");
+		setCache("bitcoinDifficulty", $difficulty, 60);	
+	}	
+	return $difficulty;
+}
+	
 ?>
