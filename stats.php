@@ -37,43 +37,35 @@ $BTC_per_block = 50; // don't keep this hardcoded
 $difficulty = $bitcoinDifficulty;
 //time = difficulty * 2**32 / hashrate
 // hashrate is in Mhash/s
-function CalculateTimePerBlock( $btc_difficulty, $_hashrate ){
-	if( $btc_difficulty > 0 && $_hashrate > 0 )
-	{
+function CalculateTimePerBlock($btc_difficulty, $_hashrate){
+	if ($btc_difficulty > 0 && $_hashrate > 0) {
 		$find_time_hours = ((($btc_difficulty * bcpow(2,32)) / ($_hashrate * bcpow(10,6))) / 3600);
-	}
-	else
-	{
+	} else {
 		$find_time_hours = 0;
 	}
-
 	return $find_time_hours;
 }
 
-function CoinsPerDay( $time_per_block, $btc_block ){
-	if( $time_per_block > 0 && $btc_block > 0 )
-	{
+function CoinsPerDay ($time_per_block, $btc_block) {
+	if($time_per_block > 0 && $btc_block > 0) {
 		$coins_per_day = (24 / $time_per_block) * $btc_block;
-	}
-	else
-	{
+	} else {
 		$coins_per_day = 0;
 	}
-
 	return $coins_per_day;
 }
 ?>
 
 <div id="stats_wrap">
 <?php
-if( !$cookieValid ){
+if (!$cookieValid){
 	echo "<div id=\"new_user_message\"><p>Welcome to <a href=\"/\">Simplecoin.us</a>! Please login or <a href=\"register.php\">join us</a> to get detailed stats and graphs relating to your hashing!</p></div>";
 }
 ?>
 <div id="stats_members">
-<table class="stats_table member_width">
-<tr><th colspan="4" scope="col">Top <?php echo $numberResults;?> Hashrates</th></tr>
-<tr><th scope="col">Rank</th><th scope="col">User Name</th><th scope="col">MH/s</th><th scope="col">BTC/Day</th></tr>
+	<table class="stats_table member_width">
+		<tr><th colspan="4" scope="col">Top <?php echo $numberResults;?> Hashrates</th></tr>
+		<tr><th scope="col">Rank</th><th scope="col">User Name</th><th scope="col">MH/s</th><th scope="col">BTC/Day</th></tr>
 <?php
 
 // TOP 30 CURRENT HASHRATES  *************************************************************************************************************************
@@ -84,67 +76,53 @@ $user_found = false;
 
 foreach ($result as $username => $user_hash_rate) {
 	//$username = $resultrow->username;
-	if( $cookieValid && $username == $userInfo->username )
-	{
+	if ($cookieValid && $username == $userInfo->username) {
 		echo "<tr class=\"user_position\">";
 		$user_found = true;
-	}
-	else
-	{
+	} else {
 		echo "<tr>";
 	}
-	echo "<td>" . $rank;
+	echo "<td>".$rank;
 
-	if( $rank == 1 )
-	{
+	if ($rank == 1) {
 		echo "&nbsp;<img src=\"/images/crown.png\" />";
 	}
 
 	//$user_hash_rate = $resultrow->hashrate;
-
-	echo "</td><td>" . $username . "</td><td>" . number_format( $user_hash_rate ) . "</td><td>&nbsp;";
-
+	echo "</td><td>".$username."</td><td>".number_format($user_hash_rate)."</td><td>&nbsp;";
 	$time_per_block = CalculateTimePerBlock($difficulty, $user_hash_rate);
-
 	$coins_day = CoinsPerDay($time_per_block, $BTC_per_block);
-
 	echo number_format( $coins_day, 3 );
-
 	echo "</td></tr>";
-
+	if ($rank == 30)
+		break;
 	$rank++;
 }
 
-if( $cookieValid && $user_found == false )
-{
+if ($cookieValid && $user_found == false){
 	$query_init       = "SET @rownum := 0";
-
 	$query_getrank    = "SELECT rank, hashrate FROM (
                         SELECT @rownum := @rownum + 1 AS rank, hashrate, id
                         FROM webUsers ORDER BY hashrate DESC
                         ) as result WHERE id=" . $userInfo->id;
 
-	mysql_query( $query_init );
-	$result = mysql_query_cache( $query_getrank );
+	mysql_query($query_init);
+	$result = mysql_query_cache($query_getrank);
 	$row = $result[0];
 
 	$user_hashrate = $row->hashrate;
-
 	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $user_hashrate ) . "</td><td>";
-
 	$time_per_block = CalculateTimePerBlock($difficulty, $user_hashrate);
-
 	$coins_day = CoinsPerDay($time_per_block, $BTC_per_block);
-
-	echo number_format( $coins_day, 3 ) . "</td></tr>";
+	echo number_format($coins_day, 3) . "</td></tr>";
 }
 ?>
 </table>
 </div>
 <div id="stats_lifetime">
-<table class="stats_table member_width">
-<tr><th colspan="3" scope="col">Top <?php echo $numberResults;?> Lifetime Shares</th></tr>
-<tr><th scope="col">Rank</th><th scope="col">User Name</th><th scope="col">Shares</th></tr>
+	<table class="stats_table member_width">
+		<tr><th colspan="3" scope="col">Top <?php echo $numberResults;?> Lifetime Shares</th></tr>
+		<tr><th scope="col">Rank</th><th scope="col">User Name</th><th scope="col">Shares</th></tr>
 <?php
 
 // TOP 30 LIFETIME SHARES  *************************************************************************************************************************
@@ -157,20 +135,16 @@ foreach ($result as $resultrow) {
 	$resdss = mysql_query_cache("SELECT username, share_count-stale_share_count+shares_this_round AS shares FROM webUsers WHERE id=$resultrow->id");
 	$resdss = $resdss[0];
 	$username = $resdss->username;
-	if( $cookieValid && $username == $userInfo->username )
-	{
+	if ($cookieValid && $username == $userInfo->username) {
 		echo "<tr class=\"user_position\">";
 		$user_found = true;
-	}
-	else
-	{
+	} else {
 		echo "<tr>";
 	}
 
 	echo "<td>" . $rank;
-
-	if( $rank == 1 )
-	{
+	
+	if ($rank == 1) {
 		echo "&nbsp;<img src=\"/images/crown.png\" />";
 	}
 
@@ -178,23 +152,22 @@ foreach ($result as $resultrow) {
 	$rank++;
 }
 
-if( $cookieValid && $user_found == false )
-{
-	$query_init       = "SET @rownum := 0";
-
-	$query_getrank    =   "SELECT rank, shares FROM (
+if ($cookieValid && $user_found == false) {
+	$query_init = "SET @rownum := 0";
+	$query_getrank =   "SELECT rank, shares FROM (
                         SELECT @rownum := @rownum + 1 AS rank, share_count-stale_share_count+shares_this_round AS shares, id
                         FROM webUsers ORDER BY shares DESC
                         ) as result WHERE id=" . $userInfo->id;
 
-	mysql_query( $query_init );
+	mysql_query($query_init);
 	$result = mysql_query_cache($query_getrank);
-	$row = $result[0];
-
-	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $row['shares'] ) . "</td></tr>";
+	if (count($result) > 0) {
+		$row = $result[0];
+		echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $row->shares ) . "</td></tr>";
+	}
 }
 ?>
-</table>
+	</table>
 </div>
 <div id="stats_server">
 
@@ -202,7 +175,6 @@ if( $cookieValid && $user_found == false )
 // START SERVER STATS *************************************************************************************************************************
 
 echo "<table class=\"stats_table server_width\">";
-
 echo "<tr><th colspan=\"2\" scope=\"col\">Server Stats</td></tr>";
 
 $hashrate = $stats->currenthashrate();
@@ -320,19 +292,19 @@ echo "<caption>Blocks Found Over Last Week</caption>";
 echo "<thead><tr><td></td>";
 
 // get last 7 days of blocks, confirms over 0
-$query = "select sum(no_blocks) as blocks_found, DATE_FORMAT(date, '%b %e') as date from (
-SELECT COUNT(blockNumber) as no_blocks, CAST(FROM_UNIXTIME(timestamp) as date) as date
-FROM networkBlocks
-WHERE confirms > 0
-AND CAST(FROM_UNIXTIME(timestamp) as DATE) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-        AND curdate()
-GROUP BY DAY(FROM_UNIXTIME(timestamp))
-UNION
-SELECT 0, CAST(FROM_UNIXTIME(timestamp) as DATE) as date
-FROM networkBlocks
-WHERE CAST(FROM_UNIXTIME(timestamp) as DATE) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-        AND curdate()
-GROUP BY DAY(FROM_UNIXTIME(timestamp))
+$query = "SELECT sum(no_blocks) as blocks_found, DATE_FORMAT(date, '%b %e') as date from 
+		(SELECT COUNT(blockNumber) as no_blocks, CAST(FROM_UNIXTIME(timestamp) as date) as date
+		FROM networkBlocks
+		WHERE confirms > 0
+			AND CAST(FROM_UNIXTIME(timestamp) as DATE) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        	AND curdate()
+		GROUP BY DAY(FROM_UNIXTIME(timestamp))
+		UNION
+		SELECT 0, CAST(FROM_UNIXTIME(timestamp) as DATE) as date
+		FROM networkBlocks
+		WHERE CAST(FROM_UNIXTIME(timestamp) as DATE) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        	AND curdate()
+		GROUP BY DAY(FROM_UNIXTIME(timestamp))
 
 ) as blah group by date";
 $result = mysql_query_cache($query);
@@ -369,13 +341,10 @@ foreach ($result as $resultrow) {
 	//$resdss = mysql_query("SELECT username FROM webUsers WHERE id=$resultrow->id");
 	//$resdss = mysql_fetch_object($resdss);
 	//$username = $resdss->username;
-	if( $cookieValid && $resultrow->username == $userInfo->username )
-	{
+	if ($cookieValid && $resultrow->username == $userInfo->username) {
 		echo "<tr class=\"user_position\">";
 		$user_found = true;
-	}
-	else
-	{
+	} else {
 		echo "<tr>";
 	}
 
@@ -402,7 +371,6 @@ if( $cookieValid && $user_found == false )
 }
 */
 echo "</table></div>";
-
 echo "<div class=\"clear\"></div></div>";
 
 include("includes/footer.php");

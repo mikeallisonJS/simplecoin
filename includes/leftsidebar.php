@@ -30,13 +30,13 @@ if(!$cookieValid){
 <div id="leftsidebar">
 	<form action="/login.php" method="post" id="loginForm">
 		Login:<br>
-		<input type="text" name="username" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'Username':this.value;" value="username" />
+		<input type="text" name="username" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'Username':this.value;" value="username" /><br/>
 		<input type="password" name="password" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'password':this.value;" value="password" />
 		<input type="submit" value="LOGIN">
 	</form><br/>
-	<form action="/login.php" method="post" login="lostForm" id="lostPassForm">
-		<input type="submit" name="act" value="Lost Password">
-	</form>
+		<a class="fancy_button top_spacing" href="lostpassword.php">
+		  <span style="background-color: #070;">Lost Password</span>
+		</a>
 </div>
 <?php
 }else 	if($cookieValid){

@@ -95,6 +95,27 @@ class Stats {
 		return $uwa;
 	}
 	
+	function username_userid_array() {
+		$userarray = Array();
+		$result = mysql_query("SELECT id, username from webUsers");
+		while ($row = mysql_fetch_object($result)) {
+			$userarray[$row->username] = $row->id;
+		}
+		return $userarray;
+	}
+	
+	function userhashratesbyid() {
+		$uhr = Array();
+		$uwa = $this->userhashrates();
+		foreach ($this->username_userid_array() as $username => $userid) {
+			if (array_key_exists($username, $uwa))
+				$uhr[$userid] = $uwa[$username];
+			else 
+				$uhr[$userid] = 0;
+		}
+		return $uhr;
+	}
+	
 	function userhashrate($username) {
 		$userhashrate = 0;
 		$uwa = $this->userhashrates();
