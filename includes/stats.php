@@ -179,7 +179,7 @@ class Stats {
 					$load = file_get_contents("/proc/loadavg");
 					$load = explode(' ', $load);
 					$avgLoad = $load[0];
-				} elseif(function_exists("shell_exec")) {
+				} elseif (function_exists("shell_exec")) {
 					$load = explode(' ', `uptime`);
 					$avgLoad = $load[count($load)-1];
 				}
@@ -193,7 +193,7 @@ class Stats {
 				} else if ($avgLoad > 0) {
 					$serverload = "low";
 				}
-			} elseif($windows) {
+			} elseif ($windows) {
 				if(class_exists("COM")) {
 					$wmi = new COM("WinMgmts:\\\\.");
 					$cpus = $wmi->InstancesOf("Win32_Processor");

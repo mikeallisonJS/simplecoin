@@ -45,6 +45,7 @@ RewardShares($difficulty, $sitePercent, $bonusCoins);
 //-----------------------------------------------------------------------------------------------------
 
 function RewardShares($difficulty, $sitePercent, $bonusCoins) {
+	global $settings;
 	lock("money");
 	try {
 		if ($settings->getsetting("siterewardtype") == 0) {
@@ -209,7 +210,7 @@ function MaxPPS($difficulty, $bonusCoins) {
       //we now have another 50 BTC!
       if($block > 135006)
       {
-         $settings->setsetting('poolppsbtc',$settings->getsetting('poolppsbtc') + 50);
+         $settings->setsetting('poolppsbtc',$settings->getsetting('poolppsbtc') + $bonusCoins);
       }
 		$totalRoundSharesQ = mysql_query("SELECT count(id) as id FROM shares_history WHERE counted = '0' AND our_result = 'Y' AND blockNumber <= ".$block);
 		if ($totalRoundSharesR = mysql_fetch_object($totalRoundSharesQ)) {
@@ -228,7 +229,7 @@ function MaxPPS($difficulty, $bonusCoins) {
 					$donatePercent = $userListCountR->donate_percent;
 
 					$shareRatio = $uncountedShares/$totalRoundShares;
-					$predonateAmount = 50 * $shareRatio;
+					$predonateAmount = $bonusCoins * $shareRatio;
 					$totalReward = (1-($sitePercent/100)) * $predonateAmount;
 
 					if ($predonateAmount > 0.00000001)	{

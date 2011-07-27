@@ -40,7 +40,6 @@ else
 	$f = (-$c)/(1-$c);
 $p = 1.0/$difficulty;
 $r = log(1.0-$p+$p/$c);
-$B = 50;
 $los = log(1/(exp($r)-1));
 
 //Active in past 10 minutes
@@ -63,7 +62,7 @@ removeCache("pool_workers");
 	$userListQ = mysql_query("SELECT IFNULL(sum(exp(s1.score-s2.score)),0) as score, u.id, u.donate_percent FROM webUsers u, pool_worker p, shares_history s1, shares_history s2 WHERE s1.counted = 0 AND p.associatedUserId = u.id AND s1.username = p.username AND s2.id = s1.id-1 GROUP BY u.id");
 	while ($userListR = mysql_fetch_object($userListQ)) {
 		$donatePercent = $userListR->donate_percent;
-		$predonateAmount = (1-$f)*(1-$c)*$p*$B*$userListR->score;
+		$predonateAmount = (1-$f)*(1-$c)*$p*$bonusCoins*$userListR->score;
 		$predonateAmount = rtrim(sprintf("%f",$predonateAmount ),"0");	
 		$totalReward = 0;
 		if ($predonateAmount > 0.00000001)

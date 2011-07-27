@@ -32,8 +32,6 @@ $last_no_blocks_found = 5;
 
 $onion_winners = 10;
 
-$BTC_per_block = 50; // don't keep this hardcoded
-
 $difficulty = $bitcoinDifficulty;
 //time = difficulty * 2**32 / hashrate
 // hashrate is in Mhash/s
@@ -91,7 +89,7 @@ foreach ($result as $username => $user_hash_rate) {
 	//$user_hash_rate = $resultrow->hashrate;
 	echo "</td><td>".$username."</td><td>".number_format($user_hash_rate)."</td><td>&nbsp;";
 	$time_per_block = CalculateTimePerBlock($difficulty, $user_hash_rate);
-	$coins_day = CoinsPerDay($time_per_block, $BTC_per_block);
+	$coins_day = CoinsPerDay($time_per_block, $bonusCoins);
 	echo number_format( $coins_day, 3 );
 	echo "</td></tr>";
 	if ($rank == 30)
@@ -113,7 +111,7 @@ if ($cookieValid && $user_found == false){
 	$user_hashrate = $row->hashrate;
 	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $user_hashrate ) . "</td><td>";
 	$time_per_block = CalculateTimePerBlock($difficulty, $user_hashrate);
-	$coins_day = CoinsPerDay($time_per_block, $BTC_per_block);
+	$coins_day = CoinsPerDay($time_per_block, $bonusCoins);
 	echo number_format($coins_day, 3) . "</td></tr>";
 }
 ?>

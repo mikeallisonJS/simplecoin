@@ -38,6 +38,7 @@ else $pageTitle = outputPageTitle(). " ". $pageTitle;
 		<!--This is the main style sheet-->
 		<link rel="stylesheet" href="css/mainstyle.css" type="text/css" />
 		<script type="text/javascript" src="/js/EnhanceJS/enhance.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>	
 		<script type="text/javascript">
 			// Run capabilities test
 			enhance({
@@ -68,19 +69,52 @@ else $pageTitle = outputPageTitle(). " ". $pageTitle;
 			<div id="logo">
 				<table width="100%" cellspacing="0" cellpadding="0" border="0">
 					<tr>
-					<td><img src="images/logo.jpg"></td>
-					<td align="right" valign="top" id="currentRates">
-						<table border="0" cellspacing="1">
-						<tr><td style="color: #FFF; text-align: right"><a href="http://www.mtgox.com" target="_blank" style="color: #FFF">MtGox (USD):</a></td><td style="color: #FFF">$<?php print $stats->mtgoxlast(); ?></td></tr>
-						<tr><td style="color: #FFF; text-align: right">Current Hashrate:</td><td style="color: #FFF"><?php print round($stats->currenthashrate()/1000,1); ?> GH/s</td></tr>
-						<tr><td style="color: #FFF; text-align: right">Current Workers:</td><td style="color: #FFF"><?php print $stats->currentworkers(); ?></td></tr>
-						<tr><td style="color: #FFF; text-align: right">Server Load:</td><td style="color: #FFF"><?php print $stats->get_server_load(); ?></td></tr>
-						</table>
+					<td rowspan="2"><img src="images/logo.jpg"></td>
+					<td valign="top"><?php include ("menu.php"); ?></td>
+					</tr>
+					<tr>
+					<td align="left" valign="bottom" id="currentRates">
 					</td>
 				</tr>
 			</table>
 			</div>
-		</div>
-		<?php include ("menu.php"); ?>
-		<?php include ("leftsidebar.php"); ?>
+		</div>		
+		<div style="width:100%; background-color:#172322; text-align:left;color: #FFF; padding-left: 1.5em">	
+			<table cellspacing="0" border="0" cellpadding="0" width="100%" style="width:100%; background-color:#172322; text-align:left;color: #FFF; left-margin: 5px"></body>
+				<tr>
+					<td>Pool</td>
+					<td>Hashrate: <?php print round($stats->currenthashrate()/1000,1); ?> GH/s</td>
+					<td>Workers: <?php print $stats->currentworkers(); ?></td>
+					<?php if ($cookieValid) {	?>
+					<td>Round Shares: <?php echo $stats->currentshares();?></td>
+					<?php } ?>
+					<td>Server Load: <?php print $stats->get_server_load(); ?></td>
+					<td><a href="http://www.mtgox.com" target="_blank" style="color: #FFF">MtGox (USD):</a> $<?php print $stats->mtgoxlast(); ?></td>					
+				</tr>
+				<?php if ($cookieValid) {	?>				
+				<tr>					
+					<td><?php echo $userInfo->username; ?> <a href="/logout.php" style="color: #FFF"><span style="font-size:small">(logout)</span></a></td>
+					<td>Hashrate: <?php print $stats->userhashrate($userInfo->username); ?> MH/s</td>
+					<td>Workers: <?php echo count($stats->workers($userInfo->id)); ?></td>
+					<td>Round Shares: <?php echo $stats->usersharecount($userId); ?></td>
+					<td>Estimate: <?php echo sprintf("%.8f", $userRoundEstimate); ?> BTC</td>
+					<td>Balance: <?php echo $currentBalance; ?> BTC</td>					
+				</tr>
+				<?php } else { ?>
+				<form action="/login.php" method="post" id="loginForm">
+				<tr>													
+					<td colspan="5">Login: 
+					<input type="text" name="username" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'Username':this.value;" value="username" /> 
+					<input type="password" name="password" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'password':this.value;" value="password" />
+					<input type="submit" value="LOGIN">
+					<a href="/lostpassword.php" style="color: #FFF"><span style="font-size: small">Lost Password</span></a>
+					</td>	
+				</tr>
+				</form>			
+				<?php } ?>
+			</table>
+		</div>		
+		
+
+		
 		<div id="content">
