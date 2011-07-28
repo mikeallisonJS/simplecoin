@@ -21,37 +21,37 @@ $includeDirectory = "/var/www/includes/";
 include($includeDirectory."requiredFunctions.php");
 include($includeDirectory."stats.php");
 $stats = new Stats();
+
 //Check that script is run locally
 ScriptIsRunLocally();
 
-//Hashrate by worker	
+//Remove cached items (in case they get stuck)
 removeCache("worker_hashrates");	
-
-//Total Hashrate (more exact than adding) (just flush stats so it is rebuilt)
 removeCache("pool_hashrate");
-
+removeCache("user_hashrates");
 
 //Hashrate by user
-removeCache("user_hashrates");
-//$sql = "SELECT u.id, IFNULL(sum(p.hashrate),0) as hashrate ".
-//		"FROM webUsers u LEFT JOIN pool_worker p ". 
-//		"ON p.associatedUserId = u.id ".
-//		"GROUP BY id";
-//$result = mysql_query($sql);
-//while ($resultrow = mysql_fetch_object($result)) {
-//	mysql_query("UPDATE webUsers SET hashrate = $resultrow->hashrate WHERE id = $resultrow->id");
 $hashrates = $stats->userhashratesbyid();
 mysql_query("BEGIN");
+$i = 0;
+$sql = "";
 foreach ($hashrates as $userid => $hashrate) {
-	$sql = "INSERT INTO userHashrates (userId, hashrate) VALUES ($userid, $hashrate)";
-//	 	"SELECT u.id as userId, IFNULL(sum(p.hashrate),0) as hashrate ".
-//		"FROM webUsers u LEFT JOIN pool_worker p ". 
-//		"ON p.associatedUserId = u.id ".
-//		"GROUP BY u.id";
-	mysql_query($sql);
+	if ($i == 0)
+		$sql = "INSERT INTO userHashrates (userId, hashrate) VALUES ";
+	else 
+		$sql .= ",";
+	$i++;
+	$sql .= "($userid, $hashrate)";
+	if ($i > 20)
+	{		
+		mysql_query($sql);
+		$sql = "";
+		$i = 0;
+	}				
 }
+if (strlen($sql) > 0)
+	mysql_query($sql);
 mysql_query("COMMIT");
-//}
 
 $currentTime = time();
 $settings->setsetting("statstime", $currentTime);

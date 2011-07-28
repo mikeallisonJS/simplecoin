@@ -33,6 +33,13 @@ $dbPassword = "pass";
 $dbPort = "3306";
 $dbDatabasename = "simplecoin";
 
+//Replicated Database calls for read intensive queries (set to above if only 1 database)
+$readOnlyDbHost = "1.1.1.1";
+$readOnlyDbUsername = "pushpool";
+$readOnlyDbPassword = "pass";
+$readOnlyDbPort = "3306";
+$readOnlyDbName = "simplecoin";
+
 //Cookie settings | More Info @ http://us.php.net/manual/en/function.setcookie.php
 $cookieName = "simplecoinus"; //Set this to what ever you want "Cheesin?"
 $cookiePath = "/";	//Choose your path!
@@ -56,7 +63,16 @@ $salt = "123483jd7Dg6h5s92k"; //Just type a random series of numbers and letters
 
 $cookieValid = false; //Don't touch leave as: false
 
+//Connect to Main Db
 connectToDb();
+
+//New PDO connection for readaccess (fallback to local if unavailable)
+try {
+	$read_only_db = new PDO('mysql:dbname='.$readOnlyDbName.';host='.$readOnlyDbHost.';port='.$readOnlyDbPort, $readOnlyDbUsername, $readOnlyDbPassword);
+} catch (Exception $e) {
+	$read_only_db = new PDO('mysql:dbname='.$dbDatabasename.';host='.$dbHost.';port='.$dbPort, $dbUsername, $dbPassword);
+}
+
 include('settings.php');
 $settings = new Settings();
 
@@ -263,5 +279,5 @@ function GetCachedBitcoinDifficulty() {
 	}	
 	return $difficulty;
 }
-	
+
 ?>

@@ -96,7 +96,7 @@ else $pageTitle = outputPageTitle(). " ". $pageTitle;
 					<td><?php echo $userInfo->username; ?> <a href="/logout.php" style="color: #FFF"><span style="font-size:small">(logout)</span></a></td>
 					<td>Hashrate: <?php print $stats->userhashrate($userInfo->username); ?> MH/s</td>
 					<td>Workers: <?php echo count($stats->workers($userInfo->id)); ?></td>
-					<td>Round Shares: <?php echo $stats->usersharecount($userId); ?></td>
+					<td>Round Shares: <?php echo $totalUserShares; ?> (<?php echo round(($stats->userstalecount($userId) / $totalUserShares * 100),1); ?>% stale)</td>
 					<td>Estimate: <?php echo sprintf("%.8f", $userRoundEstimate); ?> BTC</td>
 					<td>Balance: <?php echo $currentBalance; ?> BTC</td>					
 				</tr>

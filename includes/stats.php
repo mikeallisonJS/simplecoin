@@ -2,28 +2,41 @@
 
 class Stats {
 	function currentshares() {
+		global $read_only_db;		
 		$currentshares = 0;
 		if (!($currentshares = getCache("pool_shares"))) {
-			$sql = "SELECT count(id) FROM shares WHERE counted IS NULL";
-			$result = mysql_query($sql);
-			$row = mysql_fetch_row($result);
-			if ($row != NULL) {
-				$currentshares = $row[0];
-				//disable the following for truly live stats
-				setCache("pool_shares", $currentshares, 1);
+			$sql = "SELECT count(id) FROM shares";
+			$result = $read_only_db->query($sql);
+			if ($row = $result->fetch()) {		
+				$currentshares = $row[0];				
+				setCache("pool_shares", $currentshares, 2);
 			}
 		}
 		return $currentshares;				 
 	}
+	function currentstales() {
+		global $read_only_db;		
+		$currentshares = 0;
+		if (!($currentshares = getCache("pool_stales"))) {
+			$sql = "SELECT count(id) FROM shares WHERE our_result='N'";
+			$result = $read_only_db->query($sql);
+			if ($row = $result->fetch()) {		
+				$currentshares = $row[0];				
+				setCache("pool_stales", $currentshares, 300);
+			}
+		}
+		return $currentshares;				 		
+	}
 
 	function currenthashrate() {
+		global $read_only_db;
 		$currenthashrate = 0;
 		if (!($currenthashrate = getCache("pool_hashrate"))) {
 			$sql =  "SELECT count(id) as id FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ";
-			$result = mysql_query($sql);
-			if ($resultrow = mysql_fetch_row($result)) {
+			$result = $read_only_db->query($sql);
+			if ($resultrow = $result->fetch()) {
 				$currenthashrate = $resultrow[0];
-				$currenthashrate = round((($currenthashrate*4294967296)/600)/1000000, 0);
+				$currenthashrate = round((($currenthashrate*4294967296)/595)/1000000, 0);
 				setCache("pool_hashrate", $currenthashrate, 300);
 				try {
 					$fileName = "/var/www/api/pool/speed";
@@ -38,11 +51,24 @@ class Stats {
 		return $currenthashrate;
 	}
 
+	function poolefficiency() {
+		global $totalUserShares;
+		global $read_only_db;
+		$efficiency = 0.0;
+		if (!($efficiency = getCache("pool_efficiency"))) {
+			$efficiency = (1 - ($this->currentstales()/$this->currentshares())) * 100;
+			if ($efficiency > 0)
+				setCache("pool_efficiency", $efficiency, 600);		
+		}
+		return $efficiency;
+	}
+	
 	function currentworkers() {
+		global $read_only_db;
 		$currentworkers = 0;
 		if (!($currentworkers = getCache("pool_workers"))) {
-			$result = mysql_query("SELECT count(DISTINCT username) FROM shares WHERE time > DATE_SUB(now(), INTERVAL 60 MINUTE)");
-			if ($row = mysql_fetch_row($result)) {
+			$result = $read_only_db->query("SELECT count(DISTINCT username) FROM shares WHERE time > DATE_SUB(now(), INTERVAL 60 MINUTE)");
+			if ($row = $result->fetch()) {
 				$currentworkers = $row[0];
 				setCache("pool_workers", $currentworkers, 1800);
 			}
@@ -51,15 +77,16 @@ class Stats {
 	}
 	
 	function workerhashrates() {
+		global $read_only_db;
 		$uwa = Array();
 		if (!($uwa = getCache("worker_hashrates"))) {
 			$sql ="SELECT IFNULL(count(s.id),0) AS hashrate, p.username FROM pool_worker p LEFT JOIN ".
 				  "shares s ON p.username = s.username ".
 				  "WHERE s.time > DATE_SUB(now(), INTERVAL 10 MINUTE) ". 
 				  "GROUP BY username ";
-			$result = mysql_query($sql);
-			while ($resultObj = mysql_fetch_object($result)) {				
-				$uwa[$resultObj->username] = round((($resultObj->hashrate*4294967296)/600)/1000000, 0);
+			$result = $read_only_db->query($sql);
+			while ($resultObj = $result->fetch()) {				
+				$uwa[$resultObj[1]] = round((($resultObj[0]*4294967296)/595)/1000000, 0);
 			}
 			if (count($uwa) > 0) 
 				setCache("worker_hashrates", $uwa, 600);					
@@ -77,6 +104,7 @@ class Stats {
 	}
 	
 	function userhashrates() {
+		global $read_only_db;	
 		$uwa = Array();
 		if (!($uwa = getCache("user_hashrates"))) {
 			$sql ="SELECT IFNULL(count(s.id),0) AS hashrate, u.username FROM webUsers u ".
@@ -85,9 +113,9 @@ class Stats {
 				  "WHERE s.time > DATE_SUB(now(), INTERVAL 10 MINUTE) ". 
 				  "GROUP BY username ".
 				  "ORDER BY hashrate DESC";
-			$result = mysql_query($sql);
-			while ($resultObj = mysql_fetch_object($result)) {				
-				$uwa[$resultObj->username] = round((($resultObj->hashrate*4294967296)/600)/1000000, 0);
+			$result = $read_only_db->query($sql);
+			while ($resultObj = $result->fetch()) {				
+				$uwa[$resultObj[1]] = round((($resultObj[0]*4294967296)/595)/1000000, 0);
 			}
 			if (count($uwa) > 0) 
 				setCache("user_hashrates", $uwa, 600);					
@@ -126,26 +154,64 @@ class Stats {
 	}
 	
 	function usersharecount($userId) {
+		global $read_only_db;	
 		$totalUserShares = 0;
 		$workers = Array();
 		if (!($totalUserShares = getCache("user_shares_".$userId))) {
 			$workers = $this->workers($userId);		
 			$sql = "SELECT count(id) as id FROM shares WHERE username in ('".implode("','",$workers)."')";
-			$currentSharesQ = mysql_query($sql);
-			if ($currentSharesR = mysql_fetch_row($currentSharesQ)) {
+			$currentSharesQ = $read_only_db->query($sql);
+			if ($currentSharesR = $currentSharesQ->fetch()) {
 				$totalUserShares = $currentSharesR[0];
 				setCache("user_shares_".$userId, $totalUserShares,3);
 			}
 		}
 		return $totalUserShares;
 	}
+
+	function userstalecount($userId) {
+		global $read_only_db;
+		$totalUserShares = 0;
+		$workers = Array();
+		if (!($totalUserShares = getCache("user_stales_".$userId))) {
+			$workers = $this->workers($userId);				
+			$currentSharesQ = $read_only_db->query("SELECT count(id) as id FROM shares WHERE username in ('".implode("','",$workers)."') AND our_result='N'");
+			if ($currentSharesR = $currentSharesQ->fetch()) {
+				$totalUserShares = $currentSharesR[0];
+				setCache("user_stales_".$userId, $totalUserShares,1800);
+			}
+		}
+		return $totalUserShares;
+	}	
+	
+	function userrankshares($userid) {
+		global $read_only_db;
+		$rank_shares = Array();
+		if (!($rank_shares = getCache("user_rank_shares_".$userid))) {		
+			$query_init = "SET @rownum := 0";
+			$query_getrank =   "SELECT rank, shares FROM (
+	        	                SELECT @rownum := @rownum + 1 AS rank, share_count-stale_share_count+shares_this_round AS shares, id
+	            	            FROM webUsers ORDER BY shares DESC
+	                	        ) as result WHERE id=" . $userid;
+	
+			$read_only_db->query($query_init);
+			$result = $read_only_db->query($query_getrank);
+			if ($row = $result->fetch()) {
+				$rank_shares[0] = $row[0];
+				$rank_shares[1] = $row[1];
+			}
+		}
+		return $rank_shares;
+	}
 	
 	function workers($userId) {
+		global $read_only_db;
 		$workers = Array();
 		if (!($workers = getCache("user_workers_".$userId))) {
-			$workersQ = mysql_query("SELECT username FROM pool_worker WHERE associatedUserId = $userId");
-			while ($workersR = mysql_fetch_object($workersQ)) {
-				$workers[] = $workersR->username;
+			$sql = "SELECT username FROM pool_worker WHERE associatedUserId = ".$userId;
+			$workersQ = $read_only_db->query($sql);
+			while ($workersR = $workersQ->fetch()) {
+				$workers[] = $workersR[0];
 			}
 			if (count($workers) > 0)
 				setCache("user_workers_".$userId, $workers, 300);

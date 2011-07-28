@@ -115,8 +115,55 @@ if ($cookieValid && $user_found == false){
 	echo number_format($coins_day, 3) . "</td></tr>";
 }
 ?>
-</table>
-</div>
+</table><br/><br/>
+
+<?php 
+ // ONION WINNERS (most stale % + must be active this round)  *************************************************************************************************************************
+
+//echo "<div id=\"stats_onions\">";
+echo "<table class=\"stats_table member_width\">";
+echo "<tr><th colspan=\"3\" scope=\"col\">Our " . $onion_winners . " Onion Winners (Active this Round)</th></tr>";
+echo "<tr><th scope=\"col\">Rank</th><th scope=\"col\">User Name</th><th scope=\"col\">% Of Stales</th></tr>";
+
+$result = mysql_query_cache("SELECT id, username, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC LIMIT " . $onion_winners);
+$rank = 1;
+$user_found = false;
+
+foreach ($result as $resultrow) {
+	//$resdss = mysql_query("SELECT username FROM webUsers WHERE id=$resultrow->id");
+	//$resdss = mysql_fetch_object($resdss);
+	//$username = $resdss->username;
+	if ($cookieValid && $resultrow->username == $userInfo->username) {
+		echo "<tr class=\"user_position\">";
+		$user_found = true;
+	} else {
+		echo "<tr>";
+	}
+
+	echo "<td>" . $rank;
+
+	echo "&nbsp;<img class=\"onion\" src=\"/images/onion.png\" />";
+
+	echo "</td><td>" . $resultrow->username . "</td><td>" . number_format($resultrow->stale_percent, 2) . "%</td></tr>";
+	$rank++;
+}
+/*
+if( $cookieValid && $user_found == false )
+{
+	$query_init       = "SET @rownum := 0";
+
+	$query_getrank    =   "SELECT rank, stale_percent FROM (
+                        SELECT @rownum := @rownum + 1 AS rank, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC) as result WHERE id=" . $userInfo->id;
+
+	mysql_query( $query_init );
+	$result = mysql_query( $query_getrank );
+	$row = mysql_fetch_object( $result );
+
+	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . $row->stale_percent . "%</td></tr>";
+}
+*/
+echo "</table></div>";
+?>
 <div id="stats_lifetime">
 	<table class="stats_table member_width">
 		<tr><th colspan="3" scope="col">Top <?php echo $numberResults;?> Lifetime Shares</th></tr>
@@ -151,18 +198,9 @@ foreach ($result as $resultrow) {
 }
 
 if ($cookieValid && $user_found == false) {
-	$query_init = "SET @rownum := 0";
-	$query_getrank =   "SELECT rank, shares FROM (
-                        SELECT @rownum := @rownum + 1 AS rank, share_count-stale_share_count+shares_this_round AS shares, id
-                        FROM webUsers ORDER BY shares DESC
-                        ) as result WHERE id=" . $userInfo->id;
-
-	mysql_query($query_init);
-	$result = mysql_query_cache($query_getrank);
-	if (count($result) > 0) {
-		$row = $result[0];
-		echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . number_format( $row->shares ) . "</td></tr>";
-	}
+	$rank_shares = $stats->userrankshares($userInfo->id);
+	if (count($rank_shares) > 0)  
+		echo "<tr class=\"user_position\"><td>".$rank_shares[0]."</td><td>" . $userInfo->username . "</td><td>".number_format($rank_shares[1])."</td></tr>";	
 }
 ?>
 	</table>
@@ -172,33 +210,25 @@ if ($cookieValid && $user_found == false) {
 <?php
 // START SERVER STATS *************************************************************************************************************************
 
-echo "<table class=\"stats_table server_width\">";
-echo "<tr><th colspan=\"2\" scope=\"col\">Server Stats</td></tr>";
-
-$hashrate = $stats->currenthashrate();
-$show_hashrate = round($hashrate / 1000,3);
-
-echo "<tr><td class=\"leftheader\">Pool Hash Rate</td><td>". number_format($show_hashrate, 3) . " Ghashes/s</td></tr>";
-
-$results = mysql_query_cache("SELECT (1 - (SUM(stale_share_count)/SUM(share_count))) * 100 AS efficiency FROM webUsers") or sqlerr(__FILE__, __LINE__);
-$row = $results[0];
-
-echo "<tr><td class=\"leftheader\">Pool Efficiency</td><td><span class=\"green\">". number_format($row->efficiency, 2) . "%</span></td></tr>";
-
-$res = mysql_query_cache("SELECT count(webUsers.id) as users FROM webUsers WHERE hashrate > 0") or sqlerr(__FILE__, __LINE__);
-$row = $res[0];
-$users = $row->users;
-
-echo "<tr><td class=\"leftheader\">Current Users Mining</td><td>" . number_format($users) . "</td></tr>";
-echo "<tr><td class=\"leftheader\">Current Total Miners</td><td>" . number_format($stats->currentworkers()) . "</td></tr>";
-
+$show_hashrate = round($stats->currenthashrate() / 1000,3);
 $current_block_no = $bitcoinController->getblocknumber();
-
-echo "<tr><td class=\"leftheader\">Current Block</td><td><a href=\"http://blockexplorer.com/b/" . $current_block_no . "\">";
-echo number_format($current_block_no) . "</a></td></tr>";
-
 $show_difficulty = round($difficulty, 2);
 
+echo "<table class=\"stats_table server_width\">";
+echo "<tr><th colspan=\"2\" scope=\"col\">Server Stats</td></tr>";
+echo "<tr><td class=\"leftheader\">Pool Hash Rate</td><td>". number_format($show_hashrate, 3) . " Ghashes/s</td></tr>";
+echo "<tr><td class=\"leftheader\">Pool Efficiency</td><td><span class=\"green\">". number_format($stats->poolefficiency(), 2) . "%</span></td></tr>";
+
+$res = $stats->userhashrates();
+$hashcount = 0;
+foreach ($res as $hash)
+	if ($hash > 0) 
+		$hashcount++;
+
+echo "<tr><td class=\"leftheader\">Current Users Mining</td><td>" . number_format($hashcount) . "</td></tr>";
+echo "<tr><td class=\"leftheader\">Current Total Miners</td><td>" . number_format($stats->currentworkers()) . "</td></tr>";
+echo "<tr><td class=\"leftheader\">Current Block</td><td><a href=\"http://blockexplorer.com/b/" . $current_block_no . "\">";
+echo number_format($current_block_no) . "</a></td></tr>";
 echo "<tr><td class=\"leftheader\">Current Difficulty</th><td><a href=\"http://dot-bit.org/tools/nextDifficulty.php\">" . number_format($show_difficulty) . "</a></td></tr>";
 
 $result = mysql_query_cache("SELECT n.blockNumber, n.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT 1", 60);
@@ -218,7 +248,7 @@ foreach ($result as $resultrow) {
 	$show_time_since_found = true;
 }
 
-$time_to_find = CalculateTimePerBlock($difficulty, $hashrate);
+$time_to_find = CalculateTimePerBlock($difficulty, $stats->currenthashrate());
 // change 25.75 hours to 25:45 hours
 $intpart = floor( $time_to_find );
 $fraction = $time_to_find - $intpart; // results in 0.75
@@ -322,53 +352,9 @@ foreach ($result as $resultrow) {
 
 echo "</tbody></table>";
 
-echo "</div><div class=\"clear\"></div></div><div id=\"stats_wrap_2\" class=\"top_spacing\">";
+echo "</div>";
 
- // ONION WINNERS (most stale % + must be active this round)  *************************************************************************************************************************
 
-echo "<div id=\"stats_onions\">";
-echo "<table class=\"stats_table member_width\">";
-echo "<tr><th colspan=\"3\" scope=\"col\">Our " . $onion_winners . " Onion Winners (Active this Round)</th></tr>";
-echo "<tr><th scope=\"col\">Rank</th><th scope=\"col\">User Name</th><th scope=\"col\">% Of Stales</th></tr>";
-
-$result = mysql_query_cache("SELECT id, username, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC LIMIT " . $onion_winners);
-$rank = 1;
-$user_found = false;
-
-foreach ($result as $resultrow) {
-	//$resdss = mysql_query("SELECT username FROM webUsers WHERE id=$resultrow->id");
-	//$resdss = mysql_fetch_object($resdss);
-	//$username = $resdss->username;
-	if ($cookieValid && $resultrow->username == $userInfo->username) {
-		echo "<tr class=\"user_position\">";
-		$user_found = true;
-	} else {
-		echo "<tr>";
-	}
-
-	echo "<td>" . $rank;
-
-	echo "&nbsp;<img class=\"onion\" src=\"/images/onion.png\" />";
-
-	echo "</td><td>" . $resultrow->username . "</td><td>" . number_format($resultrow->stale_percent, 2) . "%</td></tr>";
-	$rank++;
-}
-/*
-if( $cookieValid && $user_found == false )
-{
-	$query_init       = "SET @rownum := 0";
-
-	$query_getrank    =   "SELECT rank, stale_percent FROM (
-                        SELECT @rownum := @rownum + 1 AS rank, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC) as result WHERE id=" . $userInfo->id;
-
-	mysql_query( $query_init );
-	$result = mysql_query( $query_getrank );
-	$row = mysql_fetch_object( $result );
-
-	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . $row->stale_percent . "%</td></tr>";
-}
-*/
-echo "</table></div>";
 echo "<div class=\"clear\"></div></div>";
 
 include("includes/footer.php");

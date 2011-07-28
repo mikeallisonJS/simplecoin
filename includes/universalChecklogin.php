@@ -34,27 +34,24 @@ if(isSet($_COOKIE[$cookieName])){
 	}	
 
 	//Get user information
-	$userInfoQ = mysql_query_cache("SELECT id, username, email, pin, pass, admin, share_count, stale_share_count, api_key, IFNULL(donate_percent, '0') as donate_percent, btc_lock FROM webUsers WHERE id = $userId LIMIT 0,1", 6); //	
-	if ($userInfo = $userInfoQ[0]) {
+	$userInfoQ = mysql_query("SELECT id, username, email, pin, pass, admin, api_key, IFNULL(donate_percent, '0') as donate_percent, btc_lock FROM webUsers WHERE id = $userId LIMIT 0,1"); 	
+	if ($userInfo = mysql_fetch_object($userInfoQ)) {
 		$authPin = $userInfo->pin;
 		$hashedPass = $userInfo->pass;
-		$isAdmin = $userInfo->admin;
-		$lifetimeUserShares = $userInfo->share_count - $userInfo->stale_share_count;
-		$lifetimeUserInvalidShares = $userInfo->stale_share_count;		
-		$totalUserShares = 0;
+		$isAdmin = $userInfo->admin;						
 		$currentUserHashrate = $stats->userhashrate($userInfo->username);
 		$userApiKey = $userInfo->api_key;
-		$donatePercent = $userInfo->donate_percent;
-		$userRoundEstimate = 0;
+		$donatePercent = $userInfo->donate_percent;		
 		$userEmail = $userInfo->email;
 		$userBtcLock = $userInfo->btc_lock;
 
-		$totalUserShares = $stats->usersharecount($userId);
+		$totalUserShares = $stats->usersharecount($userId);		
 		
 		//Get current round share information, estimated total earnings
 		$totalOverallShares = $stats->currentshares();	
 			
-		//Prevent divide by zero
+		//Calculate Estimate
+		$userRoundEstimate = 0;
 		if($totalUserShares > 0 && $totalOverallShares > 0) {
 			//Get site percentage
 			$sitePercent = 0;
@@ -67,9 +64,7 @@ if(isSet($_COOKIE[$cookieName])){
 				$estimatedTotalEarnings = $totalUserShares/$bitcoinDifficulty;
 			$estimatedTotalEarnings *= $bonusCoins*(1-$sitePercent); //The expected BTC to be givin out
 			$userRoundEstimate = round($estimatedTotalEarnings, 8);
-		} else {
-			$estimatedTotalEarnings = 0;
-		}
+		} 
 				
 				
 		//Get Current balance				    

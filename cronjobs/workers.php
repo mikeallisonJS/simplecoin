@@ -80,7 +80,7 @@ removeCache("pool_workers");
 } else {*/
 //Update them all at once, much more efficient.
 	//Proportional estimate
-	$totalSharesQ = mysql_query("SELECT count(id) as id FROM shares WHERE counted IS null");
+	$totalSharesQ = mysql_query("SELECT count(id) as id FROM shares");
 	if ($totalOverallSharesR = mysql_fetch_object($totalSharesQ))
 	{
 		$totalRoundShares = $totalOverallSharesR->id;		
