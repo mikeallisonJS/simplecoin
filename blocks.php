@@ -32,7 +32,7 @@ echo "<th scope=\"col\">Time</th>";
 $result = mysql_query("SELECT w.username, w.blockNumber, n.timestamp, w.confirms FROM networkBlocks n, winning_shares w WHERE n.blockNumber = w.blockNumber AND w.confirms > 1 ORDER BY w.blockNumber DESC");
 
 while($resultrow = mysql_fetch_object($result)) {
-	print("<tr>");	
+	print("<tr>");
 
 	$resulta = mysql_query("SELECT userid, count FROM shares_counted WHERE blockNumber = $resultrow->blockNumber AND userid = $userId");
 	$resdssa = mysql_fetch_object($resulta);

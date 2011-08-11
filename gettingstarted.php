@@ -22,8 +22,7 @@ include ("includes/header.php");
 ?>
 
 <b><u>Get a Bitcoin Address</u></b><br/>
-Sign-up for an online wallet. For example: <a href="https://www.mybitcoin.com/" target="_blank"  style="color: blue">mybitcoin.com</a><br/>
-Or download the client to your PC from: <a href="http://www.bitcoin.org//" target="_blank"  style="color: blue">bitcoin.org</a><br/><br/>
+Download the client to your PC from: <a href="http://www.bitcoin.org//" target="_blank"  style="color: blue">bitcoin.org</a><br/><br/>
 
 <b><u>Setup a bitcoin miner</u></b><br/><br/>
 

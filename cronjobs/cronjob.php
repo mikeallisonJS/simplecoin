@@ -45,7 +45,10 @@ try {
 		//$block->UpdateSharesBlockNumber($lastBlockNumber);
 		
 		//Insert last block number into networkBlocks
-		$block->InsertNetworkBlocks($lastBlockNumber);
+		include($includeDirectory."stats.php");
+		$stats = new Stats();
+		$lastwinningid = $stats->lastWinningShareId();
+		$block->InsertNetworkBlocks($lastBlockNumber, $lastwinningid);
 		
 		//Find new generations
 		$block->FindNewGenerations($bitcoinController);

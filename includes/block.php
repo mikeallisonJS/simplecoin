@@ -8,14 +8,10 @@ class Block {
 				return $row[0];
 		}
 		return 0;	
-	}
+	}	
 	
-//	function UpdateSharesBlockNumber($lastBlockNumber) {			
-//		mysql_query("UPDATE shares SET blockNumber = $lastBlockNumber WHERE blockNumber IS NULL");						
-//	}
-	
-	function InsertNetworkBlocks($lastBlockNumber) {
-		//Check to see if last block number exists in the db.
+	function InsertNetworkBlocks($lastBlockNumber,$lastwinningid) {		
+		//Check to see if last block number exists in the db.		
 		$inDatabaseQ = mysql_query("SELECT id FROM networkBlocks WHERE blockNumber = $lastBlockNumber LIMIT 0,1");
 		$inDatabase = mysql_num_rows($inDatabaseQ);
 		if(!$inDatabase) {
@@ -24,7 +20,7 @@ class Block {
 			mysql_query("INSERT INTO networkBlocks (blockNumber, timestamp) VALUES ($lastBlockNumber, $currentTime)");
 			
 			//Save winning share (if there is one)
-			$winningShareQ = mysql_query("SELECT id, username FROM shares where upstream_result = 'Y' and blockNumber = $lastBlockNumber");
+			$winningShareQ = mysql_query("SELECT id, username FROM shares where upstream_result = 'Y' AND id > $lastwinningid");
 			while ($winningShareR = mysql_fetch_object($winningShareQ)) {		
 				mysql_query("INSERT INTO winning_shares (blockNumber, username, share_id) VALUES ($lastBlockNumber,'$winningShareR->username',$winningShareR->id)");
 			}	
@@ -79,17 +75,17 @@ class Block {
 	function NeedsArchiving($siterewardtype, $difficulty) {
 		if ($siterewardtype == 0) {
 			$sharesDesired = $difficulty/2;
-			$result = mysql_query("SELECT share_id, rewarded FROM winning_shares ORDER BY DESC");
-			while ($row = mysql_fetch_row($result)) {
-				if ($row->rewarded = 'N') {
+			$result = mysql_query("SELECT share_id, rewarded FROM winning_shares ORDER BY blockNumber DESC");
+			while ($row = mysql_fetch_object($result)) {
+				if ($row->rewarded == 'N') {
 					$result2 = mysql_query("SELECT count(id) FROM shares WHERE id < $row->share_id and our_result='Y'");
-					if ($row2 = mysql_fetch_row()) {
+					if ($row2 = mysql_fetch_row($result2)) {
 						if ($row2[0] < $sharesDesired)
 							return false;
 					}
 				} else {
 					$result2 = mysql_query("SELECT count(id) FROM shares WHERE id > $row->share_id and our_result='Y'");
-					if ($row2 = mysql_fetch_row()) {
+					if ($row2 = mysql_fetch_row($result2)) {
 						if ($row2[0] < $sharesDesired)
 							return false;
 						else 

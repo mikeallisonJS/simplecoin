@@ -36,7 +36,7 @@ try {
 $sql = "UPDATE webUsers u, ".
 	   "	(SELECT IFNULL(count(s.id),0) AS id, p.associatedUserId FROM pool_worker p ".
 	   "	LEFT JOIN shares s ON p.username=s.username ".
-	   "	WHERE s.our_result='Y' AND s.counted IS NULL GROUP BY p.associatedUserId) a ". 
+	   "	WHERE s.our_result='Y' GROUP BY p.associatedUserId) a ". 
 	   "SET shares_this_round = a.id WHERE u.id = a.associatedUserId ";
 mysql_query($sql);
 
