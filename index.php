@@ -28,7 +28,7 @@ Simplecoin is run completely by opensource software. Even this website is openso
 We currently have a fee of <?php echo antiXss($settings->getsetting("sitepercent"))?>%, 
 a transaction fee of <?php echo antiXss($settings->getsetting("sitetxfee"))?> BTC per transaction and use 
 <?php 
-if ($settings->getsetting("siterewardtype") == 0) echo "cheat proof";
+if ($settings->getsetting("siterewardtype") == 0) echo "Last N Shares (1/2 Difficulty)";
 else if ($settings->getsetting("siterewardtype") == 2) echo "Max Pay per share";
 else echo "proportional"; 
 ?>

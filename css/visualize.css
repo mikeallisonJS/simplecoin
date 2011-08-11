@@ -1,7 +1,7 @@
 /*plugin styles*/
 .visualize { border: 1px solid #888; position: relative; background: #fafafa; }
 .visualize canvas { position: absolute; }
-.visualize ul,.visualize li { margin: 0; padding: 0;}
+.visualize ul,.visualize li { margin: 0; padding: 0; font-size:6px}
 
 /*table title, key elements*/
 .visualize .visualize-info { padding: 3px 5px; background: #fafafa; border: 1px solid #888; position: absolute; top: -20px; right: 10px; opacity: .8; }

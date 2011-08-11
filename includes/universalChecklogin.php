@@ -64,8 +64,7 @@ if(isSet($_COOKIE[$cookieName])){
 				$estimatedTotalEarnings = $totalUserShares/$bitcoinDifficulty;
 			$estimatedTotalEarnings *= $bonusCoins*(1-$sitePercent); //The expected BTC to be givin out
 			$userRoundEstimate = round($estimatedTotalEarnings, 8);
-		} 
-				
+		} 				
 				
 		//Get Current balance				    
 		$currentBalanceQ = mysql_query("SELECT balance, IFNULL(sendAddress,'') as sendAddress, threshold FROM accountBalance WHERE userId = '$userId' LIMIT 0,1");

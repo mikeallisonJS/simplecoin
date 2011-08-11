@@ -257,7 +257,7 @@ function removeSqlCache($key) {
 }
 
 # Caching version of mysql_query()
-function mysql_query_cache($sql, $timeout = 600) {
+function mysql_query_cache($sql, $timeout = 600) {	
 	if($objResultset = unserialize(getCache(md5("mysql_query".$sql))))  {		
     	return $objResultset;
   	}

@@ -80,7 +80,7 @@ echo "<span class=\"returnMessage\">".antiXss($returnError)."</span>";
 		Transaction Fee <input type="text" name="transactionFee" size="10" maxlength="10" value="<?php echo antiXss($settings->getsetting("sitetxfee")); ?>" /> BTC<br/>
 		Fee Address <input type="text" name="paymentAddress" size="60" value="<?php echo antiXss($settings->getsetting("sitepayoutaddress"));?>"><br/>
 		Default Reward Type <select name="rewardType">
-		<option value="0" <?php if ($settings->getsetting("siterewardtype") == 0) echo "selected"; ?>>Cheat Proof Score</option>
+		<option value="0" <?php if ($settings->getsetting("siterewardtype") == 0) echo "selected"; ?>>Last N Shares</option>
 		<option value="1" <?php if ($settings->getsetting("siterewardtype") == 1) echo "selected"; ?>>Proportional</option>
 		</select>
 		<br/><br/>

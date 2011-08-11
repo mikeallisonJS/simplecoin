@@ -26,38 +26,13 @@ include($includeDirectory."requiredFunctions.php");
 //Check that script is run locally
 ScriptIsRunLocally();
 
-//get counted shares by user id and move to shares_counted
-$sql = "SELECT DISTINCT p.associatedUserId, blockNumber, sum(s.valid) as valid, IFNULL(sum(si.invalid),0) as invalid, max(maxId) as maxId FROM ". 
-		"(SELECT DISTINCT username, max(blockNumber) as blockNumber, count(id) as valid, max(id) as maxId FROM shares WHERE counted='1' AND our_result='Y' GROUP BY username) s LEFT JOIN ".
-		"(SELECT DISTINCT username, count(id) as invalid FROM shares WHERE counted='1' AND our_result='N' GROUP BY username) si ON s.username=si.username ". 
-		"INNER JOIN pool_worker p ON p.username = s.username ".
-		"GROUP BY associatedUserId";	
-$sharesQ = mysql_query($sql);
-$i = 0;
-$maxId = 0;
-$shareInputSql = "";
+//Include Block class
+include($includeDirectory."block.php");
+$block = new Block();
 
-while ($sharesR = mysql_fetch_object($sharesQ)) {	
-	if ($sharesR->maxId > $maxId)
-		$maxId = $sharesR->maxId;
-	if ($i == 0) {
-		$shareInputSql = "INSERT INTO shares_counted (blockNumber, userId, count, invalid) VALUES ";
-	}
-	if ($i > 0) {
-		$shareInputSql .= ",";
-	}				
-	$i++;
-	$shareInputSql .= "($sharesR->blockNumber,$sharesR->associatedUserId,$sharesR->valid,$sharesR->invalid)";
-	if ($i > 20)
-	{		
-		mysql_query($shareInputSql);
-		$shareInputSql = "";
-		$i = 0;
-	}		
-}
-if (strlen($shareInputSql) > 0)
-	mysql_query($shareInputSql);
+$siterewardtype = $settings->getsetting("siterewardtype");
 
-//Remove counted shares from shares_history
-mysql_query("DELETE FROM shares WHERE counted = '1' AND id <= $maxId");	
+if ($block->NeedsArchiving($siterewardtype, $bitcoinDifficulty))
+	$block->Archive($siterewardtype, $bitcoinDifficulty);
+
 ?>

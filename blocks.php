@@ -24,28 +24,24 @@ echo "<tr><th scope=\"col\">Block</th>";
 echo "<th scope=\"col\">Confirms</th>";
 echo "<th scope=\"col\">Finder</th>";
 echo "<th scope=\"col\">Time</th>";
-echo "<th scope=\"col\" class=\"align_right\">Earnings</th>";
-echo "<th scope=\"col\" class=\"align_right\">Shares</th>";
-echo "<th scope=\"col\" class=\"align_right\">Totals Shares</th></tr>";
+//echo "<th scope=\"col\" class=\"align_right\">Earnings</th>";
+//echo "<th scope=\"col\" class=\"align_right\">Shares</th>";
+//echo "<th scope=\"col\" class=\"align_right\">Totals Shares</th></tr>";
 
 
-$result = mysql_query("SELECT blockNumber, confirms, timestamp FROM networkBlocks WHERE confirms > 1 ORDER BY blockNumber DESC");
+$result = mysql_query("SELECT w.username, w.blockNumber, n.timestamp, w.confirms FROM networkBlocks n, winning_shares w WHERE n.blockNumber = w.blockNumber AND w.confirms > 1 ORDER BY w.blockNumber DESC");
 
 while($resultrow = mysql_fetch_object($result)) {
-	print("<tr>");
-	$resdss = mysql_query("SELECT username FROM winning_shares WHERE blockNumber = $resultrow->blockNumber");
-	$resdss = mysql_fetch_object($resdss);
+	print("<tr>");	
 
 	$resulta = mysql_query("SELECT userid, count FROM shares_counted WHERE blockNumber = $resultrow->blockNumber AND userid = $userId");
 	$resdssa = mysql_fetch_object($resulta);
 
-	$blockNo = $resultrow->blockNumber;
-
-	$realUsername = "";
-	if ($resdss) {
-		$splitUsername = explode(".", $resdss->username);
-	    $realUsername = $splitUsername[0];
-	}
+	$blockNo = $resultrow->blockNumber;	
+	
+	$splitUsername = explode(".", $resultrow->username);
+	$realUsername = $splitUsername[0];
+	
 
 	$confirms = $resultrow->confirms;
 
@@ -53,7 +49,7 @@ while($resultrow = mysql_fetch_object($result)) {
 		$confirms = 'Completed';
 	}
 
-if($resdssa == NULL || $resdssa->balanceDelta == NULL){
+if($resdssa == NULL){
 
 	// FIX THIS CODE IF MISSING DATA IS INSERTED ************************************************
 	if( $blockNo <= 131574 )
@@ -77,11 +73,11 @@ if($resdssa == NULL || $resdssa->balanceDelta == NULL){
 
 	echo "<td><a href=\"http://blockexplorer.com/b/" . $blockNo . "\">" . number_format( $blockNo ) . "</a></td>";
 	echo "<td>" . $confirms . "</td>";
-	echo "<td>$realUsername</td>";
+	echo "<td>".$realUsername."</td>";
 	echo "<td>".strftime("%B %d %Y %r",$resultrow->timestamp)."</td>";
 	//echo "<td class=\"align_right\">" . $est . "</td>";
-	echo "<td class=\"align_right\">" . $users . "</td>";
-	echo "<td class=\"align_right\">" . $totals . "</td>";
+	//echo "<td class=\"align_right\">" . $users . "</td>";
+	//echo "<td class=\"align_right\">" . $totals . "</td>";
 }
 
 echo "</table>";

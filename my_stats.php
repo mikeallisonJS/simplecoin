@@ -100,7 +100,7 @@ else
 	echo "<thead><tr><td></td>";
 
 	$query = "SELECT DATE_FORMAT(timestamp, '%b %e') as day, hashrate FROM userHashrates WHERE timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MONTH) AND userId = " . $userInfo->id;
-	$query .= " GROUP BY EXTRACT(DAY FROM timestamp)";
+	$query .= " GROUP BY EXTRACT(MONTH FROM timestamp), EXTRACT(DAY FROM timestamp)";
 
 	$result = mysql_query_cache($query);
 

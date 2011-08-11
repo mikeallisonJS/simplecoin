@@ -72,8 +72,9 @@ if (isset($_POST["act"])) {
 				$isValidAddress = $bitcoinController->validateaddress($paymentAddress);
 				if($isValidAddress) {
 					if (!islocked("money")) {
-						//Subtract TX feee
-						$currentBalance = $currentBalance - $txfee;
+						//Subtract TX fee, site percentage and donation percentage.
+						$sitepercent = $settings->getsetting("sitepercent");
+						$currentBalance = ($currentBalance*(1-$sitepercent/100)*(1-$donatePercent/100)) - $txfee;
 						//Send money//
 						if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {
 							$paid = 0;

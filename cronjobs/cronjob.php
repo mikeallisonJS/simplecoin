@@ -26,9 +26,69 @@ include($includeDirectory."requiredFunctions.php");
 //Check that script is run locally
 ScriptIsRunLocally();
 
-//Update MtGox last price, bypass if failed
-removeCache("mtgox_last");
-
-
+lock("shares");
+try {
+	//Include Block class
+	include($includeDirectory."block.php");
+	$block = new Block();
+	
+	//Get current block number
+	$currentBlockNumber = $bitcoinController->getblocknumber();
+	$lastBlockNumber = $currentBlockNumber - 1;
+	
+	//Get latest block in database
+	$latestDbBlock = $block->getLatestDbBlockNumber();
+	
+	//Do block work if new block 
+	if ($latestDbBlock < $lastBlockNumber) {
+		//Update past shares to last block number
+		//$block->UpdateSharesBlockNumber($lastBlockNumber);
+		
+		//Insert last block number into networkBlocks
+		$block->InsertNetworkBlocks($lastBlockNumber);
+		
+		//Find new generations
+		$block->FindNewGenerations($bitcoinController);
+		
+		//Update confirms on unrewarded winning blocks
+		$block->UpdateConfirms($bitcoinController);		
+	}
+	
+	//Check for unrewarded blocks
+	if ($block->CheckUnrewardedBlocks()) {			
+		lock("money");	
+		try {
+			//Include Reward class
+			include($includeDirectory.'reward.php');
+			$reward = new Reward();
+	
+			//Get Difficulty
+			$difficulty = $bitcoinDifficulty;
+			if(!$difficulty)
+			{
+			   echo "no difficulty! exiting\n";
+			   exit;
+			}
+			
+			//Reward by selected type;
+			if ($settings->getsetting("siterewardtype") == 0) {
+				//LastNShares
+				$reward->LastNShares($difficulty, $bonusCoins);
+			//} else if ($settings->getsetting("siterewardtype") == 2) {
+				////MaxPPS
+				//MaxPPS();
+			} else {
+				//Proportional Scoring
+				$reward->ProportionalScoring($bonusCoins);
+			}
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
+		unlock("money");
+	}
+} catch (Exception $ex) {
+	echo $e->getMessage();
+}
+unlock("shares");
 
 ?>

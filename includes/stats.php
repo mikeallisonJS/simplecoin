@@ -5,7 +5,8 @@ class Stats {
 		global $read_only_db;		
 		$currentshares = 0;
 		if (!($currentshares = getCache("pool_shares"))) {
-			$sql = "SELECT count(id) FROM shares";
+			$lastwinningshare = $this->lastWinningShareId();
+			$sql = "SELECT count(id) FROM shares WHERE id > $lastwinningshare";
 			$result = $read_only_db->query($sql);
 			if ($row = $result->fetch()) {		
 				$currentshares = $row[0];				
@@ -14,11 +15,29 @@ class Stats {
 		}
 		return $currentshares;				 
 	}
+	
+	function currentUnconfirmedShares() {
+		global $read_only_db;		
+		$currentshares = 0;
+		if (!($currentshares = getCache("unconfirmed_pool_shares"))) {
+			$lastwinningshare = $this->lastWinningShareId();
+			$lastrewardedshare = $this->lastRewardedShareId();
+			$sql = "SELECT count(id) FROM shares WHERE id < $lastwinningshare AND id > $lastrewardedshare";
+			$result = $read_only_db->query($sql);
+			if ($row = $result->fetch()) {		
+				$currentshares = $row[0];				
+				setCache("unconfirmed_pool_shares", $currentshares, 600);
+			}
+		}
+		return $currentshares;				 
+	}
+	
 	function currentstales() {
 		global $read_only_db;		
 		$currentshares = 0;
+		$lastwinningshare = $this->lastWinningShareId();
 		if (!($currentshares = getCache("pool_stales"))) {
-			$sql = "SELECT count(id) FROM shares WHERE our_result='N'";
+			$sql = "SELECT count(id) FROM shares WHERE id > $lastwinningshare AND our_result='N'";
 			$result = $read_only_db->query($sql);
 			if ($row = $result->fetch()) {		
 				$currentshares = $row[0];				
@@ -33,10 +52,10 @@ class Stats {
 		$currenthashrate = 0;
 		if (!($currenthashrate = getCache("pool_hashrate"))) {
 			$sql =  "SELECT count(id) as id FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ";
-			$result = $read_only_db->query($sql);
-			if ($resultrow = $result->fetch()) {
+			$result = mysql_query($sql);
+			if ($resultrow = mysql_fetch_array($result)) {
 				$currenthashrate = $resultrow[0];
-				$currenthashrate = round((($currenthashrate*4294967296)/595)/1000000, 0);
+				$currenthashrate = round((($currenthashrate*4294967296)/590)/1000000, 0);
 				setCache("pool_hashrate", $currenthashrate, 300);
 				try {
 					$fileName = "/var/www/api/pool/speed";
@@ -64,16 +83,86 @@ class Stats {
 	}
 	
 	function currentworkers() {
-		global $read_only_db;
-		$currentworkers = 0;
+		$currentworkers = 0;		
 		if (!($currentworkers = getCache("pool_workers"))) {
-			$result = $read_only_db->query("SELECT count(DISTINCT username) FROM shares WHERE time > DATE_SUB(now(), INTERVAL 60 MINUTE)");
-			if ($row = $result->fetch()) {
-				$currentworkers = $row[0];
-				setCache("pool_workers", $currentworkers, 1800);
+			$uwa = $this->workerhashrates();
+			foreach ($uwa as $key => $value) {
+				if ($value > 0)
+					$currentworkers += 1;				
 			}
+			setCache("pool_workers", $currentworkers, 1800);
 		}
 		return $currentworkers;
+	}
+	
+	function lastRewardedShareId() {
+		global $read_only_db;
+		$shareid = 0;
+		if (!($shareid = getCache("last_rewarded_share_id"))) {
+			$result = $read_only_db->query("SELECT max(share_id) FROM winning_shares WHERE rewarded='Y'");
+			if ($row = $result->fetch()) {
+				$shareid = $row[0];				
+			}			
+			setCache("last_rewarded_share_id", $shareid, 600);
+		}
+		return $shareid;
+	}
+	
+	function lastWinningShareId() {
+		global $read_only_db;
+		$shareid = 0;
+		if (!($shareid = getCache("last_winning_share_id"))) {
+			$result = $read_only_db->query("SELECT max(share_id) FROM winning_shares");
+			if ($row = $result->fetch()) {
+				$shareid = $row[0];				
+			}			
+			setCache("last_winning_share_id", $shareid, 600);
+		}
+		return $shareid;
+	}
+	
+	function onionwinners($limit) {
+		global $read_only_db;
+		$uwa = Array();
+		if (!($uwa = getCache("onion_winners_array"))) {
+			$result = $read_only_db->query("SELECT username, (stale_share_count / share_count)*100 AS stale_percent FROM webUsers WHERE shares_this_round > 0 ORDER BY stale_percent DESC LIMIT ".$limit);
+			while ($row = $result->fetch()) {
+				$uwa[$row[0]] = $row[1];
+			}
+			setCache("onion_winners_array", $uwa, 1800);
+		}
+		return $uwa;
+	}
+	
+	function lastwinningblocks($limit) {
+		global $read_only_db;
+		$i = 0;
+		$uwa = Array();
+		if (!($uwa = getCache("last_winning_blocks"))) {
+			$result = $read_only_db->query("SELECT w.username, w.blockNumber, w.confirms, n.timestamp FROM winning_shares w, networkBlocks n WHERE w.blockNumber = n.blockNumber ORDER BY w.blockNumber DESC LIMIT ".$limit);
+			while ($row = $result->fetch()) {
+				$uwa[$i] = Array();
+				$uwa[$i][0] = $row[0];
+				$uwa[$i][1] = $row[1];
+				$uwa[$i][2] = $row[2];
+				$uwa[$i][3] = $row[3];
+				$i += 1;
+			}
+			setCache("last_winning_blocks", $uwa, 600);
+		}
+		return $uwa;
+	}
+	
+	function unrewardedblocks() {
+		global $read_only_db;
+		$count = 0;
+		if (!($count = getCache("unrewarded_block_count"))) {
+			$result = mysql_query("SELECT count(blockNumber) FROM winning_shares WHERE rewarded = 'N'") or die(mysql_error());
+			if ($row = mysql_fetch_row($result))
+				$count = $row[0];
+			setCache("unrewarded_block_count", $count, 600);
+		}
+		return $count;	
 	}
 	
 	function workerhashrates() {
@@ -86,7 +175,7 @@ class Stats {
 				  "GROUP BY username ";
 			$result = $read_only_db->query($sql);
 			while ($resultObj = $result->fetch()) {				
-				$uwa[$resultObj[1]] = round((($resultObj[0]*4294967296)/595)/1000000, 0);
+				$uwa[$resultObj[1]] = round((($resultObj[0]*4294967296)/590)/1000000, 0);
 			}
 			if (count($uwa) > 0) 
 				setCache("worker_hashrates", $uwa, 600);					
@@ -101,7 +190,7 @@ class Stats {
 			$workerhashrate = $uwa[$workername];
 		}
 		return $workerhashrate;
-	}
+	}	
 	
 	function userhashrates() {
 		global $read_only_db;	
@@ -115,7 +204,7 @@ class Stats {
 				  "ORDER BY hashrate DESC";
 			$result = $read_only_db->query($sql);
 			while ($resultObj = $result->fetch()) {				
-				$uwa[$resultObj[1]] = round((($resultObj[0]*4294967296)/595)/1000000, 0);
+				$uwa[$resultObj[1]] = round((($resultObj[0]*4294967296)/590)/1000000, 0);
 			}
 			if (count($uwa) > 0) 
 				setCache("user_hashrates", $uwa, 600);					
@@ -153,13 +242,36 @@ class Stats {
 		return $userhashrate;
 	}
 	
+	function userUnconfirmedEstimate($userid, $bonusCoins) {
+		global $read_only_db;
+		$estimate = 0;	
+		$unrewardedblocks = $this->unrewardedblocks();
+		if ($unrewardedblocks) {
+			if (!($estimate = getCache("user_unconfirmed_estimate_".$userid))) {
+				$workers = Array();
+				$lastwinningshare = $this->lastWinningShareId();
+				$lastrewardedshare = $this->lastRewardedShareId();
+				$unconfirmedshares = $this->currentUnconfirmedShares();
+				$workers = $this->workers($userId);
+				$sql = "SELECT count(id) as id FROM shares WHERE id < $lastwinningshare AND id > $lastrewardedshare AND username in ('".implode("','",$workers)."')";
+				$result = mysql_query($sql) or die(mysql_error());
+				if ($row = mysql_fetch_row($result)) {
+					$estimate = round($row[0]/$unconfirmedshares*$bonusCoins, 8);
+				}
+				setCache("user_unconfirmed_estimate_".$userid, $estimate, 600);
+			}			
+		}
+		return $estimate;
+	}
+	
 	function usersharecount($userId) {
 		global $read_only_db;	
 		$totalUserShares = 0;
 		$workers = Array();
+		$lastwinningshare = $this->lastWinningShareId();
 		if (!($totalUserShares = getCache("user_shares_".$userId))) {
 			$workers = $this->workers($userId);		
-			$sql = "SELECT count(id) as id FROM shares WHERE username in ('".implode("','",$workers)."')";
+			$sql = "SELECT count(id) as id FROM shares WHERE id > $lastwinningshare AND username in ('".implode("','",$workers)."')";
 			$currentSharesQ = $read_only_db->query($sql);
 			if ($currentSharesR = $currentSharesQ->fetch()) {
 				$totalUserShares = $currentSharesR[0];
@@ -167,6 +279,20 @@ class Stats {
 			}
 		}
 		return $totalUserShares;
+	}
+	
+	function userssharecount($limit) {
+		global $read_only_db;
+		$uwa = Array();
+		if (!($uwa = getCache("users_sharecount"))) {
+			$sql = "SELECT username, share_count-stale_share_count+shares_this_round AS shares FROM webUsers ORDER BY shares DESC LIMIT ".$limit;
+			$result = $read_only_db->query($sql);
+			while ($row = $result->fetch()) {
+				$uwa[$row[0]] = $row[1];				
+			}
+			setCache("users_sharecount", $uwa, 1800);
+		}
+		return $uwa;
 	}
 
 	function userstalecount($userId) {
@@ -204,6 +330,22 @@ class Stats {
 		return $rank_shares;
 	}
 	
+	function userrankhash($userid) {
+		global $read_only_db;
+		$rank = 1;		
+		$uha = $this->userhashratesbyid();
+		if (!($rank = getCache("user_rank_hash_".$userid))) {
+			foreach ($uha as $key => $value) {
+				if ($key == $userid)
+					break;
+				else 
+					$rank += 1;
+			}
+			setCache("user_rank_hash_".$userid, $rank, 1800);
+		}
+		return $rank;		
+	}
+	
 	function workers($userId) {
 		global $read_only_db;
 		$workers = Array();
@@ -228,9 +370,8 @@ class Stats {
 				$ticker = $mtgox->ticker();
 				if (intval($ticker['last']) > 0) 
 					$last = round(floatval($ticker['last']),2);
-			} catch (Exception $e) { }
-			if ($last != "n/a")
-				setCache("mtgox_last", $last, 1800);
+			} catch (Exception $e) { }		
+			setCache("mtgox_last", $last, 1800);
 		}
 		return $last;
 	}
