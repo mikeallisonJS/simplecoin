@@ -109,10 +109,10 @@ class Block {
 		if ($siterewardtype == 0) {
 			//Last N Shares
 			$sharesDesired = $difficulty/2;
-			$result = mysql_query("SELECT share_id, blockNumber FROM winningshares WHERE rewarded = 'Y' ORDER BY DESC");
-			while ($row = mysql_fetch_row($result)) {
+			$result = mysql_query("SELECT share_id, blockNumber FROM winning_shares WHERE rewarded = 'Y' ORDER BY blockNumber DESC");
+			while ($row = mysql_fetch_object($result)) {
 				$result2 = mysql_query("SELECT count(id) FROM shares WHERE id > $row->share_id and our_result='Y'");
-				if ($row2 = mysql_fetch_row()) {
+				if ($row2 = mysql_fetch_row($result2)) {
 					if ($row2[0] > $sharesDesired) {
 						$maxShareId = $row->share_id;
 						$blockNumber = $row->blockNumber;

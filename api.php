@@ -42,7 +42,7 @@ $apikey = mysql_real_escape_string($_GET["api_key"]);
 
 $user = new User();
 $userid = 0;
-$resultU = mysql_query_cache("SELECT u.id, b.balance, b.paid, u.round_estimate, u.username from webUsers u, accountBalance b WHERE u.id = b.userId AND u.api_key = '$apikey'", 300);
+$resultU = mysql_query_cache("SELECT u.id, b.balance, b.paid, u.username from webUsers u, accountBalance b WHERE u.id = b.userId AND u.api_key = '$apikey'", 300);
 if (count($resultU) > 0) {
 	$userobj = $resultU[0];
 	$username = $userobj->username;

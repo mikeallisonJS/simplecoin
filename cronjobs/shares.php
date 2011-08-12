@@ -25,12 +25,11 @@ ScriptIsRunLocally();
 ////Update share counts
 
 //Update past shares
-try {
-	$sql = "UPDATE webUsers u, ".
-		   	"	(SELECT DISTINCT userId, sum(count) AS valid, sum(invalid) AS invalid, id FROM shares_counted GROUP BY userId) s ".
-			"SET u.share_count = s.valid, u.stale_share_count = s.invalid WHERE u.id = s.userId";
-	mysql_query ($sql);
-} catch (Exception $ex)  {}
+$sql = "UPDATE webUsers u, ".
+	   	"	(SELECT DISTINCT userId, sum(count) AS valid, sum(invalid) AS invalid, id FROM shares_counted GROUP BY userId) s ".
+		"SET u.share_count = s.valid, u.stale_share_count = s.invalid WHERE u.id = s.userId";
+mysql_query ($sql);
+
 //
 ////Update current round shares
 $sql = "UPDATE webUsers u, ".
