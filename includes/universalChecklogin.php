@@ -19,6 +19,8 @@
 
 */
 
+$donatePercent = 0;
+
 //Check if the cookie is set, if so check if the cookie is valid
 if(isSet($_COOKIE[$cookieName])){
 	$cookieValid = false;

@@ -112,7 +112,7 @@ if ($cookieValid && $user_found == false) {
  // ONION WINNERS (most stale % + must be active this round)  *************************************************************************************************************************
 
 //echo "<div id=\"stats_onions\">";
-echo "<table class=\"stats_table member_width\">";
+/*echo "<table class=\"stats_table member_width\">";
 echo "<tr><th colspan=\"3\" scope=\"col\">Our " . $onion_winners . " Onion Winners (Active this Round)</th></tr>";
 echo "<tr><th scope=\"col\">Rank</th><th scope=\"col\">User Name</th><th scope=\"col\">% Of Stales</th></tr>";
 
@@ -137,7 +137,7 @@ foreach ($result as $username => $stale_percent) {
 
 	echo "</td><td>" . $username . "</td><td>" . number_format($stale_percent, 2) . "%</td></tr>";
 	$rank++;
-}
+}*/
 /*
 if( $cookieValid && $user_found == false )
 {
@@ -153,7 +153,8 @@ if( $cookieValid && $user_found == false )
 	echo "<tr class=\"user_position\"><td>" . $row->rank . "</td><td>" . $userInfo->username . "</td><td>" . $row->stale_percent . "%</td></tr>";
 }
 */
-echo "</table></div>";
+//echo "</table></div>";
+echo "</div>";
 ?>
 <div id="stats_lifetime">
 	<table class="stats_table member_width">
@@ -281,7 +282,7 @@ foreach ($lastblocks as $resultrow) {
 	
 	$confirms = $resultrow[2];
 
-	if ($confirms > 120) {
+	if ($confirms > 119) {
 		$confirms = "Done";
 	}
 
@@ -316,7 +317,7 @@ $query = "SELECT sum(no_blocks) as blocks_found, DATE_FORMAT(date, '%b %e') as d
 		FROM networkBlocks
 		WHERE CAST(FROM_UNIXTIME(timestamp) as DATE) > DATE_SUB(CURDATE(), INTERVAL 6 DAY)        	
 		GROUP BY DAY(FROM_UNIXTIME(timestamp))
-		) as blah group by date order by date ASC";
+		) as blah group by date order by blah.date ASC";
 $result = mysql_query_cache($query);
 
 foreach ($result as $resultrow) {

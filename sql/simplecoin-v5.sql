@@ -32,9 +32,18 @@ CREATE TABLE `accountBalance` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`),
   KEY `b_userId` (`userId`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=706 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `accountBalance`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `accountBalance` WRITE;
+/*!40000 ALTER TABLE `accountBalance` DISABLE KEYS */;
+/*!40000 ALTER TABLE `accountBalance` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `locks`
@@ -50,6 +59,15 @@ CREATE TABLE `locks` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `locks`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `locks` WRITE;
+/*!40000 ALTER TABLE `locks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `locks` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `networkBlocks`
@@ -63,8 +81,44 @@ CREATE TABLE `networkBlocks` (
   `blockNumber` int(255) NOT NULL,
   `timestamp` int(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=5876 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `networkBlocks`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `networkBlocks` WRITE;
+/*!40000 ALTER TABLE `networkBlocks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `networkBlocks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `news`
+--
+
+DROP TABLE IF EXISTS `news`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `news` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `message` varchar(255) NOT NULL,
+  `timestap` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `title` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL DEFAULT ' ',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `news`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `news` WRITE;
+/*!40000 ALTER TABLE `news` DISABLE KEYS */;
+/*!40000 ALTER TABLE `news` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `pool_worker`
@@ -78,13 +132,23 @@ CREATE TABLE `pool_worker` (
   `associatedUserId` int(255) NOT NULL,
   `username` char(50) DEFAULT NULL,
   `password` char(255) DEFAULT NULL,
+  `allowed_hosts` text,
   PRIMARY KEY (`id`),
   KEY `p_username` (`username`),
   KEY `pool_worker_associatedUserId` (`associatedUserId`),
   KEY `pool_worker_username` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=1398 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `pool_worker`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `pool_worker` WRITE;
+/*!40000 ALTER TABLE `pool_worker` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pool_worker` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `settings`
@@ -104,13 +168,12 @@ CREATE TABLE `settings` (
 --
 -- Dumping data for table `settings`
 --
+-- WHERE:  1=0
 
 LOCK TABLES `settings` WRITE;
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
-INSERT INTO `settings` VALUES ('mtgoxlast','1'),('currenthashrate','1'),('currentworkers','0'),('sitebalance','0'),('currentroundshares','1'),('sitepercent','0.001'),('websitename','SIMPLECOIN.US'),('sitepayoutaddress',''),('slogan','Making Bitcoins Simple'),('pagetitle','SIMPLECOIN.US'),('siterewardtype','0'),('statstime','0');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 UNLOCK TABLES;
-
 
 --
 -- Table structure for table `shares`
@@ -132,9 +195,18 @@ CREATE TABLE `shares` (
   KEY `shares_username` (`username`),
   KEY `shares_time` (`time`),
   KEY `shares_our_result` (`our_result`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=17615344 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `shares`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `shares` WRITE;
+/*!40000 ALTER TABLE `shares` DISABLE KEYS */;
+/*!40000 ALTER TABLE `shares` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `shares_counted`
@@ -150,9 +222,49 @@ CREATE TABLE `shares_counted` (
   `count` int(11) NOT NULL,
   `invalid` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=614 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `shares_counted`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `shares_counted` WRITE;
+/*!40000 ALTER TABLE `shares_counted` DISABLE KEYS */;
+/*!40000 ALTER TABLE `shares_counted` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `unconfirmed_rewards`
+--
+
+DROP TABLE IF EXISTS `unconfirmed_rewards`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `unconfirmed_rewards` (
+  `id` int(255) NOT NULL AUTO_INCREMENT,
+  `userId` int(255) NOT NULL,
+  `blockNumber` int(255) NOT NULL,
+  `amount` varchar(40) NOT NULL,
+  `rewarded` enum('N','Y') NOT NULL DEFAULT 'N',
+  `shares` int(255) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `unconfirmed_rewards_blockNumber` (`blockNumber`),
+  KEY `unconfirmed_rewards_rewarded` (`rewarded`),
+  KEY `unconfirmed_rewards_userId` (`userId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `unconfirmed_rewards`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `unconfirmed_rewards` WRITE;
+/*!40000 ALTER TABLE `unconfirmed_rewards` DISABLE KEYS */;
+/*!40000 ALTER TABLE `unconfirmed_rewards` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `userHashrates`
@@ -170,9 +282,18 @@ CREATE TABLE `userHashrates` (
   KEY `timestamp` (`timestamp`),
   KEY `userHashrates_id1` (`userId`),
   KEY `userId_timestamp` (`userId`,`timestamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2253830 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `userHashrates`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `userHashrates` WRITE;
+/*!40000 ALTER TABLE `userHashrates` DISABLE KEYS */;
+/*!40000 ALTER TABLE `userHashrates` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `webUsers`
@@ -194,17 +315,27 @@ CREATE TABLE `webUsers` (
   `accountLocked` int(255) NOT NULL COMMENT 'This is the timestamp when the account will be unlocked(usually used to lock accounts that are trying to be bruteforced)',
   `accountFailedAttempts` int(2) NOT NULL COMMENT 'This counts the number of failed attempts for web login',
   `pin` varchar(255) NOT NULL COMMENT 'four digit pin to allow account changes',
-  `share_count` int(11) DEFAULT NULL,
-  `stale_share_count` int(11) DEFAULT NULL,
-  `shares_this_round` int(11) DEFAULT NULL,
+  `share_count` int(11) NOT NULL DEFAULT '0',
+  `stale_share_count` int(11) NOT NULL DEFAULT '0',
+  `shares_this_round` int(11) NOT NULL DEFAULT '0',
   `api_key` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `activeEmail` int(1) DEFAULT NULL,
   `donate_percent` varchar(11) DEFAULT '1',
   `btc_lock` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `u_username` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=710 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `webUsers`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `webUsers` WRITE;
+/*!40000 ALTER TABLE `webUsers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `webUsers` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `winning_shares`
@@ -222,10 +353,21 @@ CREATE TABLE `winning_shares` (
   `amount` varchar(40) NOT NULL DEFAULT '0',
   `confirms` smallint(6) NOT NULL DEFAULT '0',
   `txid` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+  `scored` enum('N','Y') NOT NULL DEFAULT 'N',
+  PRIMARY KEY (`id`),
+  KEY `winning_shares_scored` (`scored`)
+) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `winning_shares`
+--
+-- WHERE:  1=0
+
+LOCK TABLES `winning_shares` WRITE;
+/*!40000 ALTER TABLE `winning_shares` DISABLE KEYS */;
+/*!40000 ALTER TABLE `winning_shares` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping routines for database 'simplecoin'
@@ -240,4 +382,4 @@ CREATE TABLE `winning_shares` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-08-10 20:27:56
+-- Dump completed on 2011-08-26 18:28:36

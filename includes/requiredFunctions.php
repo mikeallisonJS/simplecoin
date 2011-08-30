@@ -24,6 +24,7 @@ $rpcType = "http"; // http or https
 $rpcUsername = "pool"; // username
 $rpcPassword = "pass"; // password
 $rpcHost = "localhost";
+$rpcPort = 8332;
 
 
 //Login to Mysql with the following
@@ -77,7 +78,7 @@ include('settings.php');
 $settings = new Settings();
 
 //Open a bitcoind connection	
-$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost);
+$bitcoinController = new BitcoinClient($rpcType, $rpcUsername, $rpcPassword, $rpcHost, $rpcPort);
 
 //setup bitcoinDifficulty cache object
 $bitcoinDifficulty = GetCachedBitcoinDifficulty();
@@ -196,9 +197,9 @@ function islocked($name) {
 
 function unlock() {
 	global $_current_lock;
+	mysql_query("UNLOCK TABLES");
 	$sql = "UPDATE locks SET locked = 0 WHERE name = '" . mysql_real_escape_string($_current_lock) . "'";
 	mysql_query($sql);
-	//echo("unlocked.\n");
 }
 
 function lock($name) {
@@ -209,7 +210,6 @@ function lock($name) {
 	$lock = mysql_fetch_object($q);
 	if ($lock === false) {
 		mysql_query("INSERT INTO locks (name, locked) VALUES ('".mysql_real_escape_string($name)."', 1)");
-		//echo("New lock.\n");
 	} elseif ($lock->locked) {
 		echo("Lock already held, exiting. (".$name.")");
 		mysql_query("UNLOCK TABLES");
@@ -217,10 +217,9 @@ function lock($name) {
 		return;
 	} else {		
 		mysql_query("UPDATE locks SET locked = 1 WHERE name = '" . mysql_real_escape_string($name) . "'");
-		//echo("Taking lock.\n");
 	}
 	
-	mysql_query("UNLOCK TABLES");
+	//mysql_query("UNLOCK TABLES");
 	$_current_lock = $name;
 	register_shutdown_function('unlock');
 }

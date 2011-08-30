@@ -23,11 +23,15 @@ $includeDirectory = "/var/www/includes/";
 //Include site functions
 include($includeDirectory."requiredFunctions.php");
 
+//Include Reward class
+include($includeDirectory.'reward.php');
+$reward = new Reward();
+
 //Check that script is run locally
 ScriptIsRunLocally();
 
 lock("shares");
-try {
+
 	//Include Block class
 	include($includeDirectory."block.php");
 	$block = new Block();
@@ -40,10 +44,7 @@ try {
 	$latestDbBlock = $block->getLatestDbBlockNumber();
 	
 	//Do block work if new block 
-	if ($latestDbBlock < $lastBlockNumber) {
-		//Update past shares to last block number
-		//$block->UpdateSharesBlockNumber($lastBlockNumber);
-		
+	if ($latestDbBlock < $lastBlockNumber) {		
 		//Insert last block number into networkBlocks
 		include($includeDirectory."stats.php");
 		$stats = new Stats();
@@ -56,15 +57,12 @@ try {
 		//Update confirms on unrewarded winning blocks
 		$block->UpdateConfirms($bitcoinController);		
 	}
+unlock("shares");
 	
-	//Check for unrewarded blocks
-	if ($block->CheckUnrewardedBlocks()) {			
-		lock("money");	
+	//Check for unscored blocks() 
+	if ($block->CheckUnscoredBlocks()) {
+		lock("money");
 		try {
-			//Include Reward class
-			include($includeDirectory.'reward.php');
-			$reward = new Reward();
-	
 			//Get Difficulty
 			$difficulty = $bitcoinDifficulty;
 			if(!$difficulty)
@@ -89,9 +87,18 @@ try {
 		}
 		unlock("money");
 	}
-} catch (Exception $ex) {
-	echo $e->getMessage();
-}
-unlock("shares");
+		
+	
+	//Check for unrewarded blocks
+	if ($block->CheckUnrewardedBlocks()) {			
+		lock("money");	
+		try {
+			$reward->MoveUnrewardedToBalance();
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
+		unlock("money");
+	}
+
 
 ?>

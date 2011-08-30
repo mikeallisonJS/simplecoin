@@ -12,13 +12,13 @@ if(!$cookieValid || $isAdmin != 1) {
 
 $action = $_POST["action"];
 if($action == "news") {
-$title = $_POST["title"];
-$title = sqlesc($title);
-$news = $_POST["news"];
-$news = sqlesc($news);
-$currentTime = time();
+	$title = $_POST["title"];
+	$title = sqlesc($title);
+	$news = $_POST["news"];
+	$news = sqlesc($news);
+	$currentTime = time();
 
-mysql_query("UPDATE news SET title = $title, message = $news, timestamp = $currentTime WHERE id=1") or sqlerr(__FILE__, __LINE__);
+	mysql_query("INSERT INTO news (title,message) VALUES ('$title','$news')") or sqlerr(__FILE__, __LINE__);
 }
 
 $res = mysql_query("SELECT title, message  FROM news WHERE id = 1");

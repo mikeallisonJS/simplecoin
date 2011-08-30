@@ -23,6 +23,7 @@ class Block {
 			$winningShareQ = mysql_query("SELECT id, username FROM shares where upstream_result = 'Y' AND id > $lastwinningid");
 			while ($winningShareR = mysql_fetch_object($winningShareQ)) {		
 				mysql_query("INSERT INTO winning_shares (blockNumber, username, share_id) VALUES ($lastBlockNumber,'$winningShareR->username',$winningShareR->id)");
+				removeCache("last_winning_share_id");
 			}	
 		}
 	}
@@ -49,9 +50,8 @@ class Block {
 			if($transactions[$i]["category"] == "generate" || $transactions[$i]["category"] == "immature") {		
 				//At this point we may or may not have found a block,
 				//Check to see if this account addres is already added to `networkBlocks`
-				$accountExistsQ = mysql_query("SELECT id FROM winning_shares WHERE txid = '".$transactions[$i]["txid"]."' ORDER BY blockNumber DESC LIMIT 0,1")or die(mysql_error());
-				$accountExists = mysql_num_rows($accountExistsQ);
-		
+				$accountExistsQ = mysql_query("SELECT id FROM winning_shares WHERE txid = '".$transactions[$i]["txid"]."' ORDER BY blockNumber DESC LIMIT 0,1");				
+				$accountExists = mysql_num_rows($accountExistsQ);		
 			    //Insert txid into latest network block
 				if (!$accountExists) {									
 					//Get last winning block			
@@ -72,10 +72,17 @@ class Block {
 		return false;		
 	}
 	
+	function CheckUnscoredBlocks() {		
+		$result = mysql_query("SELECT id FROM winning_shares WHERE scored = 'N' LIMIT 0,1") or die(mysql_error());
+		if ($row = mysql_fetch_object($result))
+			return true;
+		return false;		
+	}
+	
 	function NeedsArchiving($siterewardtype, $difficulty) {
 		if ($siterewardtype == 0) {
 			$sharesDesired = $difficulty/2;
-			$result = mysql_query("SELECT share_id, rewarded FROM winning_shares ORDER BY blockNumber DESC");
+			$result = mysql_query("SELECT share_id, rewarded FROM winning_shares ORDER BY id DESC");
 			while ($row = mysql_fetch_object($result)) {
 				if ($row->rewarded == 'N') {
 					$result2 = mysql_query("SELECT count(id) FROM shares WHERE id < $row->share_id and our_result='Y'");
@@ -86,9 +93,7 @@ class Block {
 				} else {
 					$result2 = mysql_query("SELECT count(id) FROM shares WHERE id > $row->share_id and our_result='Y'");
 					if ($row2 = mysql_fetch_row($result2)) {
-						if ($row2[0] < $sharesDesired)
-							return false;
-						else 
+						if ($row2[0] > $sharesDesired)
 							return true;
 					}
 				}				
@@ -103,19 +108,22 @@ class Block {
 	}
 	
 	function Archive($siterewardtype, $difficulty) {
+		//echo "Archival requested\n";
 		$maxShareId = 0;
 		$blockNumber = 0;
 		//Get count since last winning share
 		if ($siterewardtype == 0) {
 			//Last N Shares
-			$sharesDesired = $difficulty/2;
-			$result = mysql_query("SELECT share_id, blockNumber FROM winning_shares WHERE rewarded = 'Y' ORDER BY blockNumber DESC");
+			$sharesDesired = round($difficulty/2);
+			//echo "Desired Shares: $sharesDesired\n";
+			$result = mysql_query("SELECT share_id, blockNumber FROM winning_shares WHERE rewarded = 'Y' ORDER BY id DESC");
 			while ($row = mysql_fetch_object($result)) {
 				$result2 = mysql_query("SELECT count(id) FROM shares WHERE id > $row->share_id and our_result='Y'");
-				if ($row2 = mysql_fetch_row($result2)) {
+				if ($row2 = mysql_fetch_row($result2)) {					
 					if ($row2[0] > $sharesDesired) {
 						$maxShareId = $row->share_id;
 						$blockNumber = $row->blockNumber;
+						break;
 					}
 				}
 			}			
@@ -123,13 +131,13 @@ class Block {
 			$result = mysql_query("SELECT max(share_id), max(blockNumber) FROM winning_shares WHERE rewarded='Y'");
 			if ($row = mysql_fetch_row($result)) {	
 				$maxShareId = $row[0];		
-				$blockNumber = $row[0];
+				$blockNumber = $row[1];
 			}					
 		}
 		if ($maxShareId > 0 && $blockNumber > 0) {
-			echo "Archiving\n";
-			echo "Share Id: $maxShareId\n";
-			echo "Block Number: $blockNumber\n";
+			//echo "Archiving\n";
+			//echo "Share Id: $maxShareId\n";
+			//echo "Block Number: $blockNumber\n";
 			//get counted shares by user id and move to shares_counted
 			$sql = "SELECT p.associatedUserId, sum(s.valid) as valid, IFNULL(sum(si.invalid),0) as invalid FROM ". 
 				"(SELECT username, count(id) as valid  FROM shares WHERE id <= $maxShareId AND our_result='Y' GROUP BY username) s LEFT JOIN ".
@@ -151,19 +159,19 @@ class Block {
 				if ($i > 20)
 				{		
 					echo "$shareInputSql\n";
-					//mysql_query($shareInputSql);
+					mysql_query($shareInputSql);
 					$shareInputSql = "";
 					$i = 0;
 				}		
 			}
 			if (strlen($shareInputSql) > 0) {
 				echo "$shareInputSql\n";
-				//mysql_query($shareInputSql);
+				mysql_query($shareInputSql);
 			}
 			
 			//Remove counted shares from shares_history
-			echo "DELETE FROM shares WHERE id <= $maxShareId\n";
-			//mysql_query("DELETE FROM shares WHERE id <= $maxShareId");	
+			//echo "DELETE FROM shares WHERE id <= $maxShareId\n";
+			mysql_query("DELETE FROM shares WHERE id <= $maxShareId");	
 		}
 	}
 }

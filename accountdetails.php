@@ -76,21 +76,29 @@ if (isset($_POST["act"])) {
 						$sitepercent = $settings->getsetting("sitepercent");
 						$currentBalance = ($currentBalance*(1-$sitepercent/100)*(1-$donatePercent/100)) - $txfee;
 						//Send money//
-						if($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {
+						try {
 							$paid = 0;
 							$result = mysql_query("SELECT IFNULL(paid,'0') as paid FROM accountBalance WHERE userId=".$userId);
 							if ($resultrow = mysql_fetch_object($result)) $paid = $resultrow->paid + $currentBalance;
 							
+							lock("money");
+							mysql_query("BEGIN");
 							//Reduce balance amount to zero
 							mysql_query("UPDATE accountBalance SET balance = '0', paid = '$paid' WHERE userId = $userId");
-														
+							if ($bitcoinController->sendtoaddress($paymentAddress, $currentBalance)) {																									
 							$goodMessage = "You have successfully sent ".$currentBalance." to the following address:".$paymentAddress;
+								mail("$userEmail", "Simplecoin Manual Payout Notification", "Hello,\n\nYour requested manual payout of ". $currentBalance." BTC has been sent to your payment address ".$paymentAddress.".", "From: Simplecoin Notifications <server@simplecoin.us>");
 							//Set new variables so it appears on the page flawlessly
-							mail("$userEmail", "Simplecoin Manual Payout Notification", "Hello,\n\nYour requested manual payout of ". $currentBalance." BTC has been sent to your payment address ".$paymentAddress.".", "From: Simplecoin Notifications <server@simplecoin.us>");
 							$currentBalance = 0;						
+								mysql_query("COMMIT");
 						}else{
+								mysql_query("ROLLBACK");
 							$returnError = "Commodity failed to send.";
 						}
+						} catch (Exception $e) {							
+							mysql_query("ROLLBACK");
+					}
+						unlock("money");
 					}
 					else
 					{
@@ -228,7 +236,7 @@ if (isset($_POST["act"])) {
 echo "<span class=\"goodMessage\">".$goodMessage."</span><br/>";
 echo "<span class=\"returnMessage\">".$returnError."</span>";
 ?>
-<h2>Account Details</h2>
+<b><u>Account Details</u></b><br/>
 <form action="/accountdetails.php" method="post"><input type="hidden" name="act" value="updateDetails">
 <table>
 	<tr><td>Username: </td><td><?php echo antiXss($userInfo->username);?></td></tr>
@@ -245,7 +253,7 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <input type="submit" value="Update Account Settings"></form>
 <br />
 <br />
-<h2>Cash Out</h2>
+<b><u>Cash Out</u></b><br/>
 <?php if ($settings->getsetting("sitetxfee") > 0) {?><i>(Please note: a <?php echo $settings->getsetting("sitetxfee")?> btc transaction fee is required by the bitcoin client for processing)</i><br/><?php } ?>
 <form action="/accountdetails.php" method="post">
 <input type="hidden" name="act" value="cashOut">
@@ -258,7 +266,7 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <br />
 <br />
 
-<h2>Change Password</h2>
+<b><u>Change Password</u></b><br/>
 <form action="/accountdetails.php" method="post"><input type="hidden" name="act" value="updatePassword">
 <table>
 	<tr><td>Current Password: </td><td><input type="password" name="currentPassword"></td></tr>
@@ -271,7 +279,7 @@ echo "<span class=\"returnMessage\">".$returnError."</span>";
 <br />
 <br />
 
-<h2>Workers</h2>
+<b><u>Workers</u></b><br/>
 <table border="1" cellpadding="1" cellspacing="1">
 <tr><td><u>Worker Name </u></td><td><u>Worker Password</u></td><td><u>Active</u></td><td><u>Hashrate (Mhash/s)</u></td><td><u>Update</u></td><td><u>Delete</u></td></tr>
 <?php	

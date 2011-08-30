@@ -1,12 +1,31 @@
 <?php
 
 class Stats {
+	function previousRoundSharesInShares() {
+		//don't cache 0/1 or true/false
+		global $read_only_db;
+		$retval = "new";
+		if (!($retval = getCache("previousRoundSharesInShares"))) {
+			$sql = "SELECT s.id FROM shares s, winning_shares w WHERE s.id = w.share_id";
+			$result = $read_only_db->query($sql);
+			if ($row = $result->fetch()) 
+				$retval = "old";			
+			setCache("previousRoundSharesInShares", $retval, 300);
+		}
+		//echo "prev shares: $retval";
+		if ($retval == "old")
+			return true;
+		return false;		
+	}
+	
 	function currentshares() {
 		global $read_only_db;		
 		$currentshares = 0;
 		if (!($currentshares = getCache("pool_shares"))) {
 			$lastwinningshare = $this->lastWinningShareId();
-			$sql = "SELECT count(id) FROM shares WHERE id > $lastwinningshare";
+			$sql = "SELECT count(*) FROM shares";
+			if ($this->previousRoundSharesInShares())
+				$sql = "SELECT count(*) FROM shares WHERE id > $lastwinningshare";			
 			$result = $read_only_db->query($sql);
 			if ($row = $result->fetch()) {		
 				$currentshares = $row[0];				
@@ -22,7 +41,7 @@ class Stats {
 		if (!($currentshares = getCache("unconfirmed_pool_shares"))) {
 			$lastwinningshare = $this->lastWinningShareId();
 			$lastrewardedshare = $this->lastRewardedShareId();
-			$sql = "SELECT count(id) FROM shares WHERE id < $lastwinningshare AND id > $lastrewardedshare";
+			$sql = "SELECT count(*) FROM shares WHERE id < $lastwinningshare AND id > $lastrewardedshare";
 			$result = $read_only_db->query($sql);
 			if ($row = $result->fetch()) {		
 				$currentshares = $row[0];				
@@ -37,7 +56,9 @@ class Stats {
 		$currentshares = 0;
 		$lastwinningshare = $this->lastWinningShareId();
 		if (!($currentshares = getCache("pool_stales"))) {
-			$sql = "SELECT count(id) FROM shares WHERE id > $lastwinningshare AND our_result='N'";
+			$sql = "SELECT count(*) FROM shares WHERE our_result='N'";
+			if ($this->previousRoundSharesInShares())
+				$sql = "SELECT count(*) FROM shares WHERE id > $lastwinningshare AND our_result='N'";
 			$result = $read_only_db->query($sql);
 			if ($row = $result->fetch()) {		
 				$currentshares = $row[0];				
@@ -51,7 +72,7 @@ class Stats {
 		global $read_only_db;
 		$currenthashrate = 0;
 		if (!($currenthashrate = getCache("pool_hashrate"))) {
-			$sql =  "SELECT count(id) as id FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ";
+			$sql =  "SELECT count(*) as id FROM shares WHERE time > DATE_SUB(now(), INTERVAL 10 MINUTE) ";
 			$result = mysql_query($sql);
 			if ($resultrow = mysql_fetch_array($result)) {
 				$currenthashrate = $resultrow[0];
@@ -59,7 +80,7 @@ class Stats {
 				setCache("pool_hashrate", $currenthashrate, 300);
 				try {
 					$fileName = "/var/www/api/pool/speed";
-					$fileHandle = fopen($fileName, 'w') or die("can't open file");
+					$fileHandle = fopen($fileName, 'w');
 					fwrite($fileHandle, ($currenthashrate/1000));
 					fclose($fileHandle);
 				} catch (Exception $e) {
@@ -118,6 +139,8 @@ class Stats {
 			}			
 			setCache("last_winning_share_id", $shareid, 600);
 		}
+		if ($shareid == '')
+			return 0;
 		return $shareid;
 	}
 	
@@ -157,13 +180,13 @@ class Stats {
 		global $read_only_db;
 		$count = 0;
 		if (!($count = getCache("unrewarded_block_count"))) {
-			$result = mysql_query("SELECT count(blockNumber) FROM winning_shares WHERE rewarded = 'N'") or die(mysql_error());
+			$result = mysql_query("SELECT count(*) FROM winning_shares WHERE rewarded = 'N'") or die(mysql_error());
 			if ($row = mysql_fetch_row($result))
 				$count = $row[0];
 			setCache("unrewarded_block_count", $count, 600);
 		}
 		return $count;	
-	}
+	}	
 	
 	function workerhashrates() {
 		global $read_only_db;
@@ -212,6 +235,12 @@ class Stats {
 		return $uwa;
 	}
 	
+	function stalecalc($roundstales, $roundshares) {		
+		if ($roundshares > 0)
+			return round($roundstales/$roundshares*100,2);
+		return 0;
+	}
+	
 	function username_userid_array() {
 		$userarray = Array();
 		$result = mysql_query("SELECT id, username from webUsers");
@@ -242,26 +271,37 @@ class Stats {
 		return $userhashrate;
 	}
 	
-	function userUnconfirmedEstimate($userid, $bonusCoins) {
+	function userUnconfirmedEstimate($userid) {
 		global $read_only_db;
-		$estimate = 0;	
+		$estimate = 0;			
 		$unrewardedblocks = $this->unrewardedblocks();
 		if ($unrewardedblocks) {
-			if (!($estimate = getCache("user_unconfirmed_estimate_".$userid))) {
-				$workers = Array();
-				$lastwinningshare = $this->lastWinningShareId();
-				$lastrewardedshare = $this->lastRewardedShareId();
-				$unconfirmedshares = $this->currentUnconfirmedShares();
-				$workers = $this->workers($userId);
-				$sql = "SELECT count(id) as id FROM shares WHERE id < $lastwinningshare AND id > $lastrewardedshare AND username in ('".implode("','",$workers)."')";
+			if (!($estimate = getCache("user_unconfirmed_estimate_".$userid))) {				
+				$sql = "SELECT IFNULL(sum(amount),0) FROM unconfirmed_rewards WHERE userId = $userid AND rewarded='N'";
 				$result = mysql_query($sql) or die(mysql_error());
 				if ($row = mysql_fetch_row($result)) {
-					$estimate = round($row[0]/$unconfirmedshares*$bonusCoins, 8);
+					$estimate = $row[0];
 				}
 				setCache("user_unconfirmed_estimate_".$userid, $estimate, 600);
 			}			
 		}
 		return $estimate;
+	}
+	
+	function userUnconfirmedShares($userid) {
+		global $read_only_db;
+		$shares = 0;			
+		if ($unrewardedblocks) {
+			if (!($shares = getCache("user_unconfirmed_shares_".$userid))) {				
+				$sql = "SELECT IFNULL(sum(shares),0) FROM unconfirmed_rewards WHERE userId = $userid AND rewarded='N'";
+				$result = mysql_query($sql);
+				if ($row = mysql_fetch_row($result)) {
+					$shares = $row[0];
+				}
+				setCache("user_unconfirmed_shares_".$userid, $shares, 600);
+			}			
+		}
+		return $shares;
 	}
 	
 	function usersharecount($userId) {
@@ -270,8 +310,15 @@ class Stats {
 		$workers = Array();
 		$lastwinningshare = $this->lastWinningShareId();
 		if (!($totalUserShares = getCache("user_shares_".$userId))) {
-			$workers = $this->workers($userId);		
-			$sql = "SELECT count(id) as id FROM shares WHERE id > $lastwinningshare AND username in ('".implode("','",$workers)."')";
+			$workers = $this->workers($userId);
+			$sql = "SELECT sum(s.id) FROM (SELECT 'a' as username, 0 as id ";
+			foreach ($workers as $worker) {
+				if ($this->previousRoundSharesInShares())
+					$sql .= "UNION SELECT username, count(id) as id FROM shares WHERE username = '$worker' AND id > $lastwinningshare ";
+				else 
+					$sql .= "UNION SELECT username, count(id) as id FROM shares WHERE username = '$worker' ";				
+			}
+			$sql .= ") s";			
 			$currentSharesQ = $read_only_db->query($sql);
 			if ($currentSharesR = $currentSharesQ->fetch()) {
 				$totalUserShares = $currentSharesR[0];
@@ -299,9 +346,18 @@ class Stats {
 		global $read_only_db;
 		$totalUserShares = 0;
 		$workers = Array();
+		$lastwinningshare = $this->lastWinningShareId();
 		if (!($totalUserShares = getCache("user_stales_".$userId))) {
-			$workers = $this->workers($userId);				
-			$currentSharesQ = $read_only_db->query("SELECT count(id) as id FROM shares WHERE username in ('".implode("','",$workers)."') AND our_result='N'");
+			$workers = $this->workers($userId);		
+			$sql = "SELECT sum(s.id) FROM (SELECT 'a' as username, 0 as id ";
+			foreach ($workers as $worker) {
+				if ($this->previousRoundSharesInShares())
+					$sql .= "UNION SELECT username, count(id) as id FROM shares WHERE username = '$worker' AND id > $lastwinningshare AND our_result='N' ";
+				else 
+					$sql .= "UNION SELECT username, count(id) as id FROM shares WHERE username = '$worker' AND our_result='N' ";				
+			}
+			$sql .= ") s";
+			$currentSharesQ = $read_only_db->query($sql);							
 			if ($currentSharesR = $currentSharesQ->fetch()) {
 				$totalUserShares = $currentSharesR[0];
 				setCache("user_stales_".$userId, $totalUserShares,1800);
@@ -376,14 +432,15 @@ class Stats {
 		return $last;
 	}
 	
-	function get_server_load($windows = 0) {	
+	function get_server_load($windows = 0) {			
 		$serverload = "n/a";
 		if (!($serverload = getCache("pool_load"))) {
+			$numberOfCores = 8;
 			$avgLoad = 0;			
 			$os = strtolower(PHP_OS);		
 			if(strpos($os, "win") === false) {
-				if(file_exists("/proc/loadavg")) {
-					$load = file_get_contents("/proc/loadavg");
+				if(file_exists("http://pool.simplecoin.us/loadavg.html")) {
+					$load = file_get_contents("http://pool.simplecoin.us/loadavg.html");
 					$load = explode(' ', $load);
 					$avgLoad = $load[0];
 				} elseif (function_exists("shell_exec")) {
@@ -391,13 +448,13 @@ class Stats {
 					$avgLoad = $load[count($load)-1];
 				}
 				//This may need to be adjusted depending on your system. This is assuming a dual core setup.
-				if ($avgLoad > 1.9) {
+				if ($avgLoad > 1.9*$numberOfCores) {
 					$serverload = "critical";
-				} else if ($avgLoad > 1.5) {
+				} else if ($avgLoad > 1.5*$numberOfCores) {
 					$serverload = "high";
-				} else if ($avgLoad > .5) {
+				} else if ($avgLoad > .5*$numberOfCores) {
 					$serverload = "mid";
-				} else if ($avgLoad > 0) {
+				} else if ($avgLoad > 0*$numberOfCores) {
 					$serverload = "low";
 				}
 			} elseif ($windows) {

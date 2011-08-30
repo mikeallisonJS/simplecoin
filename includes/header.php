@@ -38,19 +38,18 @@ else $pageTitle = outputPageTitle(). " ". $pageTitle;
 		<!--This is the main style sheet-->
 		<link rel="stylesheet" href="css/mainstyle.css" type="text/css" />
 		<script type="text/javascript" src="/js/EnhanceJS/enhance.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>	
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>	
 		<script type="text/javascript">
 			// Run capabilities test
 			enhance({
 				loadScripts: [
-					'js/excanvas.js',
-					'js/jquery-1.6.1.min.js',
-					'js/visualize.jQuery.js',
-					'js/ozcoin_graphs.js'
+					'/js/excanvas.js',
+					'/js/visualize.jQuery.js',
+					'/js/ozcoin_graphs.js'
 				],
 				loadStyles: [
-					'css/visualize.css',
-					'css/visualize-light.css'
+					'/css/visualize.css',
+					'/css/visualize-light.css'
 				]
 			});
     	</script>
